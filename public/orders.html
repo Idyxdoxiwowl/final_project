@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <h1 class="logo">Jewelry Store</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="orders.html">Orders</a>
+                <span id="user-info"></span>
+                <button id="logout-btn" style="display: none;">Logout</button>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="orders-container">
+            <h2>My Orders</h2>
+            <div id="order-list" class="order-grid"></div>
+        </section>
+    </main>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const orderList = document.getElementById("order-list");
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Please log in to see your orders.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5000/api/orders", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const orders = await response.json();
+
+                orders.forEach(order => {
+                    const orderCard = document.createElement("div");
+                    orderCard.classList.add("order-card");
+                    orderCard.innerHTML = `
+                        <h3>Order ID: ${order._id}</h3>
+                        <p>Total Price: $${order.totalPrice}</p>
+                        <button class="delete-btn" data-id="${order._id}">Cancel Order</button>
+                    `;
+                    orderList.appendChild(orderCard);
+                });
+
+                document.querySelectorAll(".delete-btn").forEach(button => {
+                    button.addEventListener("click", async (e) => {
+                        const orderId = e.target.dataset.id;
+                        const deleteResponse = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+                            method: "DELETE",
+                            headers: { "Authorization": `Bearer ${token}` }
+                        });
+
+                        const deleteData = await deleteResponse.json();
+                        if (deleteData.message) {
+                            alert("Order cancelled!");
+                            window.location.reload();
+                        } else {
+                            alert(deleteData.error || "Failed to cancel order.");
+                        }
+                    });
+                });
+
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        });
+    </script>
+</body>
+</html>
