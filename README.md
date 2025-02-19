@@ -1,4 +1,4 @@
-# Jewelry Store - NoSQL Project (MongoDB)
+# Jewelry Store - Final Project   (✿◡‿◡)
 
 ### Project Description
 Jewelry Store is a web application for purchasing jewelry, developed using **Node.js (Express.js)** and **MongoDB (NoSQL)**.  
@@ -227,4 +227,8 @@ If you have any questions, feel free to reach out:
 ---
 
 ### **Project is fully ready for deployment and testing!**
+
+## **Developers**
+- Ayana Ussenbayeva
+- Dana Otepova
 
