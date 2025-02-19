@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jewelry Store</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <h1 class="logo">Jewelry Store</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="#collections">Collections</a>
+                <a href="orders.html">Orders</a>
+                <span id="user-info"></span>
+                <button id="login-btn">Login</button>
+                <button id="logout-btn" style="display: none;">Logout</button>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="auth-container">
+            <div class="auth-form" id="auth-form">
+                <h2 id="auth-title">Login</h2>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button id="submit-auth">Login</button>
+                <p id="auth-toggle">Don't have an account? <a href="#" id="toggle-register">Register here</a></p>
+            </div>
+        </section>
+        <section class="products" id="collections">
+            <h2>Our Collection</h2>
+            <div id="product-list" class="product-grid"></div>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
