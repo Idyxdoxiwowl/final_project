@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const API_URL = "https://final-project-afz0.onrender.com";
-    
+    const API_URL = "https://final-project-afz0.onrender.com"; // URL API
+
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
     const authForm = document.getElementById("auth-form");
@@ -15,70 +15,81 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let isLogin = true;
 
-    toggleRegister.addEventListener("click", (e) => {
-        e.preventDefault();
-        isLogin = !isLogin;
-        authTitle.textContent = isLogin ? "Login" : "Register";
-        submitAuth.textContent = isLogin ? "Login" : "Register";
-        toggleRegister.innerHTML = isLogin 
-            ? "Don't have an account? <a href='#'>Register here</a>" 
-            : "Already have an account? <a href='#'>Login here</a>";
-    });
+    // Переключение между логином и регистрацией
+    if (toggleRegister) {
+        toggleRegister.addEventListener("click", (e) => {
+            e.preventDefault();
+            isLogin = !isLogin;
+            authTitle.textContent = isLogin ? "Login" : "Register";
+            submitAuth.textContent = isLogin ? "Login" : "Register";
+            toggleRegister.innerHTML = isLogin
+                ? "Don't have an account? <a href='#'>Register here</a>"
+                : "Already have an account? <a href='#'>Login here</a>";
+        });
+    }
 
+    // Проверка токена и отображение пользователя
     const token = localStorage.getItem("token");
     const userEmail = localStorage.getItem("userEmail");
 
     if (token && userEmail) {
-        authForm.style.display = "none";
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        userDisplay.innerHTML = `<strong>👤 ${userEmail}</strong>`;
+        if (authForm) authForm.style.display = "none";
+        if (loginBtn) loginBtn.style.display = "none";
+        if (logoutBtn) logoutBtn.style.display = "inline-block";
+        if (userDisplay) userDisplay.innerHTML = `<strong>👤 ${userEmail}</strong>`;
     }
 
-    logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userEmail");
-        location.reload();
-    });
+    // Выход из системы
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userEmail");
+            location.reload();
+        });
+    }
 
-    submitAuth.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-        if (!email || !password) {
-            alert("Please enter both email and password.");
-            return;
-        }
-
-        const url = isLogin ? `${API_URL}/api/login` : `${API_URL}/api/register`;
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("userEmail", email);
-                window.location.href = "index.html";
-            } else {
-                alert(data.error || "Authentication failed.");
+    // Авторизация/регистрация
+    if (submitAuth) {
+        submitAuth.addEventListener("click", async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!email || !password) {
+                alert("Please enter both email and password.");
+                return;
             }
-        } catch (error) {
-            console.error("Auth error:", error);
-            alert("Server error. Please try again later.");
-        }
-    });
 
+            const url = isLogin ? `${API_URL}/api/login` : `${API_URL}/api/register`;
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("userEmail", email);
+                    window.location.href = "index.html";
+                } else {
+                    alert(data.error || "Authentication failed.");
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+                alert("Server error. Please try again later.");
+            }
+        });
+    }
+
+    // Загрузка товаров
     const loadProducts = async () => {
         try {
             const response = await fetch(`${API_URL}/api/products`);
             const products = await response.json();
 
             if (!productList) return;
-            productList.innerHTML = "";
+            productList.innerHTML = ""; // Очистка списка перед добавлением новых товаров
 
             if (products.length === 0) {
                 productList.innerHTML = "<p>No products available.</p>";
@@ -105,6 +116,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
+    // Покупка товаров
     const attachBuyButtons = () => {
         document.querySelectorAll(".buy-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -120,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     try {
                         const orderResponse = await fetch(`${API_URL}/api/orders`, {
                             method: "POST",
-                            headers: { 
+                            headers: {
                                 "Content-Type": "application/json",
                                 "Authorization": `Bearer ${token}`
                             },
@@ -144,18 +156,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     };
 
+    // Загрузка заказов
     const loadOrders = async () => {
         if (!orderList) return;
-        
+
         try {
             const response = await fetch(`${API_URL}/api/orders`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const orders = await response.json();
 
-            orderList.innerHTML = "";
+            orderList.innerHTML = ""; // Очистка списка заказов перед загрузкой
 
-            if (orders.length === 0) {
+            if (!orders.length) {
                 orderList.innerHTML = "<p>No orders found.</p>";
                 return;
             }
@@ -174,26 +187,36 @@ document.addEventListener("DOMContentLoaded", async () => {
             attachDeleteButtons();
         } catch (error) {
             console.error("Error fetching orders:", error);
-            orderList.innerHTML = "<p>Failed to load orders.</p>";
         }
     };
 
+    // Удаление заказа
     const attachDeleteButtons = () => {
         document.querySelectorAll(".delete-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
                 const orderId = e.target.dataset.id;
-                if (!token) return;
-                if (confirm("Are you sure you want to cancel this order?")) {
-                    await fetch(`${API_URL}/api/orders/${orderId}`, {
-                        method: "DELETE",
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-                    loadOrders();
+                console.log("Attempting to delete order:", orderId); // Лог для отладки
+                const deleteResponse = await fetch(`${API_URL}/api/orders/${orderId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                const deleteData = await deleteResponse.json();
+                if (deleteResponse.ok) {
+                    alert("Order cancelled!");
+                    window.location.reload();
+                } else {
+                    alert(deleteData.error || "Failed to cancel order.");
                 }
             });
         });
     };
 
-    if (productList) loadProducts();
-    if (orderList) loadOrders();
+    // Инициализация функций
+    if (productList) {
+        loadProducts();
+    }
+    if (orderList) {
+        loadOrders();
+    }
 });
