@@ -24,6 +24,56 @@
             <div id="order-list" class="order-grid"></div>
         </section>
     </main>
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const orderList = document.getElementById("order-list");
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Please log in to see your orders.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            try {
+                const response = await fetch("https://final-project-afz0.onrender.com/api/orders", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const orders = await response.json();
+
+                orders.forEach(order => {
+                    const orderCard = document.createElement("div");
+                    orderCard.classList.add("order-card");
+                    orderCard.innerHTML = `
+                        <h3>Order ID: ${order._id}</h3>
+                        <p>Total Price: $${order.totalPrice}</p>
+                        <button class="delete-btn" data-id="${order._id}">Cancel Order</button>
+                    `;
+                    orderList.appendChild(orderCard);
+                });
+
+                document.querySelectorAll(".delete-btn").forEach(button => {
+                    button.addEventListener("click", async (e) => {
+                        const orderId = e.target.dataset.id;
+                        const deleteResponse = await fetch(`https://final-project-afz0.onrender.com/api/orders/${orderId}`, {
+                            method: "DELETE",
+                            headers: { "Authorization": `Bearer ${token}` }
+                        });
+
+                        const deleteData = await deleteResponse.json();
+                        if (deleteData.message) {
+                            alert("Order cancelled!");
+                            window.location.reload();
+                        } else {
+                            alert(deleteData.error || "Failed to cancel order.");
+                        }
+                    });
+                });
+
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        });
+    </script>
 </body>
 </html>
