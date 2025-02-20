@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
+    const API_URL = "https://final-project-afz0.onrender.com";
+    
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
     const authForm = document.getElementById("auth-form");
@@ -9,10 +11,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const toggleRegister = document.getElementById("toggle-register");
     const userDisplay = document.getElementById("user-info");
     const productList = document.getElementById("product-list");
+    const orderList = document.getElementById("order-list");
 
     let isLogin = true;
 
-    // Переключение между логином и регистрацией
     toggleRegister.addEventListener("click", (e) => {
         e.preventDefault();
         isLogin = !isLogin;
@@ -23,7 +25,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             : "Already have an account? <a href='#'>Login here</a>";
     });
 
-    // Проверка токена и отображение пользователя
     const token = localStorage.getItem("token");
     const userEmail = localStorage.getItem("userEmail");
 
@@ -34,14 +35,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         userDisplay.innerHTML = `<strong>👤 ${userEmail}</strong>`;
     }
 
-    // Выход из системы
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("userEmail");
         location.reload();
     });
 
-    // Авторизация/регистрация
     submitAuth.addEventListener("click", async () => {
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
@@ -50,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const url = isLogin ? "https://final-project-afz0.onrender.com/api/login" : "https://final-project-afz0.onrender.com/api/register";
+        const url = isLogin ? `${API_URL}/api/login` : `${API_URL}/api/register`;
 
         try {
             const response = await fetch(url, {
@@ -73,14 +72,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // Загрузка товаров (ограничено 6 случайными)
     const loadProducts = async () => {
         try {
-            const response = await fetch("https://final-project-afz0.onrender.com/api/products");
+            const response = await fetch(`${API_URL}/api/products`);
             const products = await response.json();
 
             if (!productList) return;
-            productList.innerHTML = ""; // Очищаем перед добавлением новых
+            productList.innerHTML = "";
 
             if (products.length === 0) {
                 productList.innerHTML = "<p>No products available.</p>";
@@ -107,7 +105,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Функция для обработки кнопок "Buy"
     const attachBuyButtons = () => {
         document.querySelectorAll(".buy-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -121,7 +118,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (confirm("Do you want to confirm your order?")) {
                     try {
-                        const orderResponse = await fetch("https://final-project-afz0.onrender.com/api/orders", {
+                        const orderResponse = await fetch(`${API_URL}/api/orders`, {
                             method: "POST",
                             headers: { 
                                 "Content-Type": "application/json",
@@ -147,86 +144,56 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     };
 
-    // Инициализация загрузки продуктов
-    if (productList) {
-        loadProducts();
-    }
-});
+    const loadOrders = async () => {
+        if (!orderList) return;
+        
+        try {
+            const response = await fetch(`${API_URL}/api/orders`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const orders = await response.json();
 
-// Функция загрузки заказов и обработки удаления
-const loadOrders = async () => {
-    const orderList = document.getElementById("order-list");
-    const token = localStorage.getItem("token");
+            orderList.innerHTML = "";
 
-    if (!token || !orderList) return;
-
-    try {
-        const response = await fetch("https://final-project-afz0.onrender.com/api/orders", {
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-        const orders = await response.json();
-
-        orderList.innerHTML = ""; // Очистка перед добавлением заказов
-
-        if (orders.length === 0) {
-            orderList.innerHTML = "<p>No orders found.</p>";
-            return;
-        }
-
-        orders.forEach(order => {
-            const orderCard = document.createElement("div");
-            orderCard.classList.add("order-card");
-            orderCard.innerHTML = `
-                <h3>Order ID: ${order._id}</h3>
-                <p>Total Price: $${order.totalPrice}</p>
-                <button class="delete-btn" data-id="${order._id}">Cancel Order</button>
-            `;
-            orderList.appendChild(orderCard);
-        });
-
-        attachDeleteButtons();
-    } catch (error) {
-        console.error("Error fetching orders:", error);
-        orderList.innerHTML = "<p>Failed to load orders.</p>";
-    }
-};
-
-// Функция для обработки кнопок "Cancel Order"
-const attachDeleteButtons = () => {
-    document.querySelectorAll(".delete-btn").forEach(button => {
-        button.addEventListener("click", async (e) => {
-            const orderId = e.target.dataset.id;
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                alert("You need to log in to cancel an order!");
+            if (orders.length === 0) {
+                orderList.innerHTML = "<p>No orders found.</p>";
                 return;
             }
 
-            if (confirm("Are you sure you want to cancel this order?")) {
-                try {
-                    const deleteResponse = await fetch(`https://final-project-afz0.onrender.com/api/orders/${orderId}`, {
+            orders.forEach(order => {
+                const orderCard = document.createElement("div");
+                orderCard.classList.add("order-card");
+                orderCard.innerHTML = `
+                    <h3>Order ID: ${order._id}</h3>
+                    <p>Total Price: $${order.totalPrice}</p>
+                    <button class="delete-btn" data-id="${order._id}">Cancel Order</button>
+                `;
+                orderList.appendChild(orderCard);
+            });
+
+            attachDeleteButtons();
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            orderList.innerHTML = "<p>Failed to load orders.</p>";
+        }
+    };
+
+    const attachDeleteButtons = () => {
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const orderId = e.target.dataset.id;
+                if (!token) return;
+                if (confirm("Are you sure you want to cancel this order?")) {
+                    await fetch(`${API_URL}/api/orders/${orderId}`, {
                         method: "DELETE",
                         headers: { "Authorization": `Bearer ${token}` }
                     });
-
-                    const deleteData = await deleteResponse.json();
-                    if (deleteResponse.ok) {
-                        alert("✅ Order cancelled successfully!");
-                        loadOrders(); // Обновляем список заказов после удаления
-                    } else {
-                        alert(deleteData.error || "❌ Failed to cancel order.");
-                    }
-                } catch (error) {
-                    console.error("Error deleting order:", error);
-                    alert("Error cancelling order. Please try again.");
+                    loadOrders();
                 }
-            }
+            });
         });
-    });
-};
+    };
 
-// Загружаем заказы, если пользователь на странице orders.html
-if (document.getElementById("order-list")) {
-    loadOrders();
-}
+    if (productList) loadProducts();
+    if (orderList) loadOrders();
+});
