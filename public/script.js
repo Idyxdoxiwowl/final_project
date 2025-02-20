@@ -152,3 +152,81 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadProducts();
     }
 });
+
+// Функция загрузки заказов и обработки удаления
+const loadOrders = async () => {
+    const orderList = document.getElementById("order-list");
+    const token = localStorage.getItem("token");
+
+    if (!token || !orderList) return;
+
+    try {
+        const response = await fetch("https://final-project-afz0.onrender.com/api/orders", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const orders = await response.json();
+
+        orderList.innerHTML = ""; // Очистка перед добавлением заказов
+
+        if (orders.length === 0) {
+            orderList.innerHTML = "<p>No orders found.</p>";
+            return;
+        }
+
+        orders.forEach(order => {
+            const orderCard = document.createElement("div");
+            orderCard.classList.add("order-card");
+            orderCard.innerHTML = `
+                <h3>Order ID: ${order._id}</h3>
+                <p>Total Price: $${order.totalPrice}</p>
+                <button class="delete-btn" data-id="${order._id}">Cancel Order</button>
+            `;
+            orderList.appendChild(orderCard);
+        });
+
+        attachDeleteButtons();
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        orderList.innerHTML = "<p>Failed to load orders.</p>";
+    }
+};
+
+// Функция для обработки кнопок "Cancel Order"
+const attachDeleteButtons = () => {
+    document.querySelectorAll(".delete-btn").forEach(button => {
+        button.addEventListener("click", async (e) => {
+            const orderId = e.target.dataset.id;
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("You need to log in to cancel an order!");
+                return;
+            }
+
+            if (confirm("Are you sure you want to cancel this order?")) {
+                try {
+                    const deleteResponse = await fetch(`https://final-project-afz0.onrender.com/api/orders/${orderId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+
+                    const deleteData = await deleteResponse.json();
+                    if (deleteResponse.ok) {
+                        alert("✅ Order cancelled successfully!");
+                        loadOrders(); // Обновляем список заказов после удаления
+                    } else {
+                        alert(deleteData.error || "❌ Failed to cancel order.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting order:", error);
+                    alert("Error cancelling order. Please try again.");
+                }
+            }
+        });
+    });
+};
+
+// Загружаем заказы, если пользователь на странице orders.html
+if (document.getElementById("order-list")) {
+    loadOrders();
+}
