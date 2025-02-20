@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const API_URL = "https://final-project-afz0.onrender.com"; // Замените на свой Render URL
-
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
     const authForm = document.getElementById("auth-form");
@@ -52,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const url = isLogin ? `${API_URL}/api/login` : `${API_URL}/api/register`;
+        const url = isLogin ? "https://final-project-afz0.onrender.com/api/login" : "https://final-project-afz0.onrender.com/api/register";
 
         try {
             const response = await fetch(url, {
@@ -78,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Загрузка товаров (ограничено 6 случайными)
     const loadProducts = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/products`);
+            const response = await fetch("https://final-project-afz0.onrender.com/api/products");
             const products = await response.json();
 
             if (!productList) return;
@@ -123,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (confirm("Do you want to confirm your order?")) {
                     try {
-                        const orderResponse = await fetch(`${API_URL}/api/orders`, {
+                        const orderResponse = await fetch("https://final-project-afz0.onrender.com/api/orders", {
                             method: "POST",
                             headers: { 
                                 "Content-Type": "application/json",
