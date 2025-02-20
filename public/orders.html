@@ -26,6 +26,8 @@
     </main>
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
+            const API_URL = "https://final-project-afz0.onrender.com"; // Замените на реальный URL вашего бекенда
+
             const orderList = document.getElementById("order-list");
             const token = localStorage.getItem("token");
 
@@ -36,10 +38,15 @@
             }
 
             try {
-                const response = await fetch("http://localhost:5000/api/orders", {
+                const response = await fetch(`${API_URL}/api/orders`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 const orders = await response.json();
+
+                if (!Array.isArray(orders) || orders.length === 0) {
+                    orderList.innerHTML = "<p>No orders found.</p>";
+                    return;
+                }
 
                 orders.forEach(order => {
                     const orderCard = document.createElement("div");
@@ -55,13 +62,13 @@
                 document.querySelectorAll(".delete-btn").forEach(button => {
                     button.addEventListener("click", async (e) => {
                         const orderId = e.target.dataset.id;
-                        const deleteResponse = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+                        const deleteResponse = await fetch(`${API_URL}/api/orders/${orderId}`, {
                             method: "DELETE",
                             headers: { "Authorization": `Bearer ${token}` }
                         });
 
                         const deleteData = await deleteResponse.json();
-                        if (deleteData.message) {
+                        if (deleteResponse.ok) {
                             alert("Order cancelled!");
                             window.location.reload();
                         } else {
@@ -72,6 +79,7 @@
 
             } catch (error) {
                 console.error("Error fetching orders:", error);
+                orderList.innerHTML = "<p>Failed to load orders.</p>";
             }
         });
     </script>
