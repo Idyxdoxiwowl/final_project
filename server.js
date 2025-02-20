@@ -214,6 +214,31 @@ app.get("/api/orders", authenticate, async (req, res) => {
   }
 });
 
+app.delete("/api/orders/:id", authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log("Удаление заказа с ID:", id);
+        console.log("ID пользователя:", req.user.userId);
+
+        // Проверяем, есть ли заказ перед удалением
+        const existingOrder = await Order.findOne({ _id: id });
+        if (!existingOrder) {
+            return res.status(404).json({ error: "Заказ не найден" });
+        }
+
+        const order = await Order.findOneAndDelete({ _id: id, userId: req.user.userId });
+        if (!order) {
+            return res.status(404).json({ error: "Заказ не найден для этого пользователя" });
+        }
+
+        res.json({ message: "Заказ успешно удален" });
+    } catch (error) {
+        console.error("Ошибка при удалении заказа:", error);
+        res.status(500).json({ error: "Не удалось удалить заказ" });
+    }
+});
+
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 5000;
