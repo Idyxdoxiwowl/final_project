@@ -13,10 +13,10 @@ app.use(cors());
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
-// Подключение к MongoDB
-mongoose.connect("mongodb://127.0.0.1:27017/jewelry_store").then(() => {
-  console.log("✅ MongoDB Connected");
-}).catch(err => console.log("❌ DB Connection Error:", err));
+// Подключение к MongoDB Atlas
+mongoose.connect(process.env.MONGO_URI,)
+.then(() => console.log("✅ MongoDB Connected"))
+.catch(err => console.log("❌ DB Connection Error:", err));
 
 // Создание индексов для быстродействия
 mongoose.connection.once("open", async () => {
