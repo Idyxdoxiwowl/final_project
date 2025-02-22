@@ -12,8 +12,7 @@
             <h1 class="logo">Jewelry Store</h1>
             <nav>
                 <a href="index.html">Home</a>
-                <a href="#collections">Collections</a>
-                <a href="orders.html">Orders</a>
+                <a href="orders.html">My Orders</a>
                 <span id="user-info"></span>
                 <button id="login-btn">Login</button>
                 <button id="logout-btn" style="display: none;">Logout</button>
@@ -32,12 +31,31 @@
             </div>
         </section>
 
+        <!-- Панель администратора -->
         <section class="admin-panel" id="admin-panel" style="display: none;">
             <h2>Admin Panel</h2>
-            <button id="add-product-btn">Add Product</button>
+            
+            <!-- Форма добавления товара -->
+            <h3>Add New Product</h3>
+            <form id="add-product-form">
+                <input type="text" id="product-name" placeholder="Product Name" required>
+                <input type="number" id="product-price" placeholder="Price" required>
+                <textarea id="product-description" placeholder="Description"></textarea>
+                <input type="text" id="product-image" placeholder="Image URL">
+                <button type="submit">Add Product</button>
+            </form>
+
+            <!-- Управление пользователями -->
+            <h3>All Users</h3>
+            <div id="user-list"></div>
+
+            <!-- Управление заказами -->
+            <h3>All Orders</h3>
+            <div id="admin-orders"></div>
         </section>
         
-        <section class="products" id="collections">
+        <!-- Раздел товаров -->
+        <section class="products">
             <h2>Our Collection</h2>
             <div id="product-list" class="product-grid"></div>
         </section>
