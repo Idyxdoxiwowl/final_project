@@ -26,17 +26,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const token = localStorage.getItem("token");
     const userEmail = localStorage.getItem("userEmail");
+    const userRole = localStorage.getItem("userRole");
 
     if (token && userEmail) {
         authForm.style.display = "none";
         loginBtn.style.display = "none";
         logoutBtn.style.display = "inline-block";
-        userDisplay.innerHTML = `<strong>👤 ${userEmail}</strong>`;
+        userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
     }
 
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("userEmail");
+        localStorage.removeItem("userRole");
         location.reload();
     });
 
@@ -49,18 +51,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const url = isLogin ? `https://final-project-afz0.onrender.com/api/auth/login` : `https://final-project-afz0.onrender.com/api/auth/register`;
+        const body = isLogin ? { email, password } : { email, password, role: "user" }; // Передаем роль по умолчанию
 
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify(body)
             });
 
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userEmail", email);
+                localStorage.setItem("userRole", data.role); // Сохраняем роль пользователя
                 window.location.href = "index.html";
             } else {
                 alert(data.error || "Authentication failed.");
@@ -72,11 +76,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const loadProducts = async () => {
+        if (!productList) return;
         try {
             const response = await fetch(`https://final-project-afz0.onrender.com/api/products`);
             const products = await response.json();
 
-            if (!productList) return;
             productList.innerHTML = "";
 
             if (products.length === 0) {
