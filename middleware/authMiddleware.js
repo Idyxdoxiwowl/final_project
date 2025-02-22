@@ -33,10 +33,11 @@ const authenticate = async (req, res, next) => {
  * Middleware для проверки, является ли пользователь администратором.
  */
 const checkAdmin = (req, res, next) => {
-    if (!req.user || req.user.role !== "admin") {
-        return res.status(403).json({ error: "Forbidden: Admin access required" });
+    if (req.user && req.user.role === "admin") {
+        next();
+    } else {
+        res.status(403).json({ error: "Access denied, admin only" });
     }
-    next();
 };
 
 /**
