@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Регистрация пользователя
 exports.registerUser = async (req, res) => {
     try {
-        // Валидация входных данных с Joi
+        // Валидация входных данных
         const { error } = registerSchema.validate(req.body);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
@@ -20,19 +20,25 @@ exports.registerUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ email, password: hashedPassword, role: role || "user" });
+        const newUser = new User({
+            email,
+            password: hashedPassword,
+            role: role || "user" // По умолчанию пользователь
+        });
+
         await newUser.save();
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Register Error:", err);
+        res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
 
 // Авторизация пользователя
 exports.loginUser = async (req, res) => {
     try {
-        // Валидация входных данных с Joi
+        // Валидация входных данных
         const { error } = loginSchema.validate(req.body);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
@@ -48,11 +54,16 @@ exports.loginUser = async (req, res) => {
             return res.status(400).json({ error: "Invalid password" });
         }
 
-        const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "2h" });
+        const token = jwt.sign(
+            { userId: user._id, email: user.email, role: user.role },
+            JWT_SECRET,
+            { expiresIn: "2h" }
+        );
 
         res.json({ token, email: user.email, role: user.role });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Login Error:", err);
+        res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
 
@@ -65,7 +76,8 @@ exports.getProfile = async (req, res) => {
         }
         res.json(user);
     } catch (error) {
-        res.status(500).json({ error: "Server error" });
+        console.error("Profile Fetch Error:", error);
+        res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
 
@@ -84,7 +96,8 @@ exports.updateProfile = async (req, res) => {
 
         res.json({ message: "Profile updated successfully", user });
     } catch (error) {
-        res.status(500).json({ error: "Server error" });
+        console.error("Profile Update Error:", error);
+        res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
 
@@ -94,6 +107,7 @@ exports.getUsers = async (req, res) => {
         const users = await User.find().select("-password");
         res.json(users);
     } catch (error) {
+        console.error("Get Users Error:", error);
         res.status(500).json({ error: "Error fetching users" });
     }
 };
@@ -102,6 +116,11 @@ exports.getUsers = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+
+        if (req.user.userId === id) {
+            return res.status(403).json({ error: "You cannot delete your own account" });
+        }
+
         const user = await User.findByIdAndDelete(id);
 
         if (!user) {
@@ -110,6 +129,7 @@ exports.deleteUser = async (req, res) => {
 
         res.json({ message: "User deleted successfully" });
     } catch (error) {
+        console.error("Delete User Error:", error);
         res.status(500).json({ error: "Error deleting user" });
     }
 };
