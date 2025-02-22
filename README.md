@@ -219,13 +219,6 @@ git push -u origin main
 
 ---
 
-## **Contact Information**
-If you have any questions, feel free to reach out:
-- Email: your.email@example.com
-- GitHub: [your-username](https://github.com/your-username)
-
----
-
 ### **Project is fully ready for deployment and testing!**
 
 ## **Developers**
