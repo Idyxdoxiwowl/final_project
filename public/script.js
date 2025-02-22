@@ -14,17 +14,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const orderList = document.getElementById("order-list");
     const userList = document.getElementById("user-list");
     const adminOrderList = document.getElementById("admin-orders");
-    const updateProfileForm = document.getElementById("update-profile-form");
 
     let isLogin = true;
+    const API_URL = "https://final-project-afz0.onrender.com/api";
 
     toggleRegister.addEventListener("click", (e) => {
         e.preventDefault();
         isLogin = !isLogin;
         authTitle.textContent = isLogin ? "Login" : "Register";
         submitAuth.textContent = isLogin ? "Login" : "Register";
-        toggleRegister.innerHTML = isLogin
-            ? "Don't have an account? <a href='#'>Register here</a>"
+        toggleRegister.innerHTML = isLogin 
+            ? "Don't have an account? <a href='#'>Register here</a>" 
             : "Already have an account? <a href='#'>Login here</a>";
     });
 
@@ -43,8 +43,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             loadAllUsers();
             loadAdminOrders();
         }
-
-        loadUserProfile();
     }
 
     logoutBtn.addEventListener("click", () => {
@@ -60,10 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const url = isLogin
-            ? `https://final-project-afz0.onrender.com/api/auth/login`
-            : `https://final-project-afz0.onrender.com/api/auth/register`;
-
+        const url = isLogin ? `${API_URL}/auth/login` : `${API_URL}/auth/register`;
         const body = isLogin ? { email, password } : { email, password, role: "user" };
 
         try {
@@ -90,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const loadProducts = async () => {
         try {
-            const response = await fetch(`https://final-project-afz0.onrender.com/api/products`);
+            const response = await fetch(`${API_URL}/products`);
             const products = await response.json();
 
             if (!productList) return;
@@ -115,7 +110,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (userRole === "admin") {
                     productCard.innerHTML += `
                         <button class="delete-btn" data-id="${product._id}">Delete</button>
-                        <button class="edit-btn" data-id="${product._id}">Edit</button>
                     `;
                 }
                 productList.appendChild(productCard);
@@ -123,88 +117,108 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             attachBuyButtons();
             attachDeleteButtons();
-            attachEditButtons();
         } catch (error) {
             console.error("Error fetching products:", error);
             productList.innerHTML = "<p>Failed to load products.</p>";
         }
     };
 
-    const attachEditButtons = () => {
-        document.querySelectorAll(".edit-btn").forEach(button => {
+    const attachBuyButtons = () => {
+        document.querySelectorAll(".buy-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
                 const productId = e.target.dataset.id;
                 const token = localStorage.getItem("token");
 
-                const newName = prompt("Enter new product name:");
-                const newPrice = prompt("Enter new price:");
-                const newDescription = prompt("Enter new description:");
-
-                if (!newName || !newPrice || !newDescription) return;
+                if (!token) {
+                    alert("You need to log in to place an order!");
+                    return;
+                }
 
                 try {
-                    const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ name: newName, price: newPrice, description: newDescription })
+                    const response = await fetch(`${API_URL}/orders`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                        body: JSON.stringify({ products: [{ productId, quantity: 1 }] })
                     });
 
-                    if (response.ok) {
-                        alert("✅ Product updated successfully!");
-                        loadProducts();
-                    }
+                    if (response.ok) alert("✅ Order placed successfully!");
                 } catch (error) {
-                    console.error("Error updating product:", error);
+                    console.error("Error placing order:", error);
                 }
             });
         });
     };
 
-    const loadUserProfile = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+    const attachDeleteButtons = () => {
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const productId = e.target.dataset.id;
+                const token = localStorage.getItem("token");
 
+                if (!token || userRole !== "admin") {
+                    alert("Only admin can delete products!");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/products/${productId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": "Bearer " + token }
+                    });
+
+                    if (response.ok) {
+                        alert("✅ Product deleted successfully!");
+                        loadProducts();
+                    }
+                } catch (error) {
+                    console.error("Error deleting product:", error);
+                }
+            });
+        });
+    };
+
+    const loadAllUsers = async () => {
         try {
-            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
-                headers: { "Authorization": `Bearer ${token}` }
+            const response = await fetch(`${API_URL}/auth/users`);
+            const users = await response.json();
+
+            if (!userList) return;
+            userList.innerHTML = "";
+
+            users.forEach(user => {
+                const userItem = document.createElement("div");
+                userItem.innerHTML = `
+                    <p>${user.email} (${user.role})</p>
+                    <button class="delete-user-btn" data-id="${user._id}">Delete</button>
+                `;
+                userList.appendChild(userItem);
             });
 
-            const user = await response.json();
-            if (user.email) {
-                document.getElementById("profile-email").innerText = `Email: ${user.email}`;
-            }
+            attachDeleteUserButtons();
         } catch (error) {
-            console.error("Error loading profile:", error);
+            console.error("Error fetching users:", error);
         }
     };
 
-    document.getElementById("update-profile-btn")?.addEventListener("click", async () => {
-        const token = localStorage.getItem("token");
-        const newEmail = prompt("Enter your new email:");
+    const attachDeleteUserButtons = () => {
+        document.querySelectorAll(".delete-user-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const userId = e.target.dataset.id;
+                const token = localStorage.getItem("token");
 
-        if (!newEmail) return;
+                try {
+                    await fetch(`${API_URL}/auth/users/${userId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": "Bearer " + token }
+                    });
 
-        try {
-            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ email: newEmail })
+                    loadAllUsers();
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                }
             });
-
-            if (response.ok) {
-                alert("✅ Profile updated successfully!");
-                loadUserProfile();
-            }
-        } catch (error) {
-            console.error("Error updating profile:", error);
-        }
-    });
+        });
+    };
 
     if (productList) {
         loadProducts();
