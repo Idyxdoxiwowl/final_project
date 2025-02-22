@@ -10,10 +10,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userDisplay = document.getElementById("user-info");
     const productList = document.getElementById("product-list");
     const adminPanel = document.getElementById("admin-panel");
-    
+
     let isLogin = true;
 
-    // Переключение между входом и регистрацией
     toggleRegister.addEventListener("click", (e) => {
         e.preventDefault();
         isLogin = !isLogin;
@@ -33,17 +32,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         loginBtn.style.display = "none";
         logoutBtn.style.display = "inline-block";
         userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
-        
+
         if (userRole === "admin") {
             adminPanel.style.display = "block";
         }
+        loadProducts();
     }
 
     logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userEmail");
-        localStorage.removeItem("userRole");
-        location.reload();
+        localStorage.clear(); // Полностью очищаем localStorage
+        location.href = "index.html"; // Перезагружаем страницу
     });
 
     submitAuth.addEventListener("click", async () => {
@@ -54,9 +52,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const url = isLogin ? 
-            `https://final-project-afz0.onrender.com/api/auth/login` : 
-            `https://final-project-afz0.onrender.com/api/auth/register`;
+        const url = isLogin 
+            ? `https://final-project-afz0.onrender.com/api/auth/login`
+            : `https://final-project-afz0.onrender.com/api/auth/register`;
 
         const body = isLogin ? { email, password } : { email, password, role: "user" };
 
@@ -72,7 +70,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userEmail", email);
                 localStorage.setItem("userRole", data.role);
-                window.location.href = "index.html";
+
+                location.href = "index.html"; // Перезагружаем для загрузки данных
             } else {
                 alert(data.error || "Authentication failed.");
             }
@@ -93,6 +92,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 productList.innerHTML = "<p>No products available.</p>";
                 return;
             }
+
+            const userRole = localStorage.getItem("userRole"); // Получаем роль при загрузке
 
             products.forEach(product => {
                 const productCard = document.createElement("div");
@@ -166,7 +167,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const productId = e.target.dataset.id;
                 const token = localStorage.getItem("token");
 
-                if (!token || userRole !== "admin") {
+                if (!token || localStorage.getItem("userRole") !== "admin") {
                     alert("Only admin can delete products!");
                     return;
                 }
@@ -181,7 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         const data = await response.json();
                         if (response.ok) {
                             alert("✅ Product deleted successfully!");
-                            loadProducts();
+                            loadProducts(); // Обновляем список продуктов после удаления
                         } else {
                             alert(data.error || "❌ Failed to delete product.");
                         }
