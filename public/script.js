@@ -10,9 +10,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userDisplay = document.getElementById("user-info");
     const productList = document.getElementById("product-list");
     const adminPanel = document.getElementById("admin-panel");
-
+    const addProductBtn = document.getElementById("add-product-btn");
+    
     let isLogin = true;
 
+    // Переключение между входом и регистрацией
     toggleRegister.addEventListener("click", (e) => {
         e.preventDefault();
         isLogin = !isLogin;
@@ -40,8 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     logoutBtn.addEventListener("click", () => {
-        localStorage.clear(); // Полностью очищаем localStorage
-        location.href = "index.html"; // Перезагружаем страницу
+        localStorage.clear();
+        location.href = "index.html";
     });
 
     submitAuth.addEventListener("click", async () => {
@@ -70,8 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userEmail", email);
                 localStorage.setItem("userRole", data.role);
-
-                location.href = "index.html"; // Перезагружаем для загрузки данных
+                location.href = "index.html";
             } else {
                 alert(data.error || "Authentication failed.");
             }
@@ -92,8 +93,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 productList.innerHTML = "<p>No products available.</p>";
                 return;
             }
-
-            const userRole = localStorage.getItem("userRole"); // Получаем роль при загрузке
 
             products.forEach(product => {
                 const productCard = document.createElement("div");
@@ -137,13 +136,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     try {
                         const orderResponse = await fetch(`https://final-project-afz0.onrender.com/api/orders`, {
                             method: "POST",
-                            headers: { 
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${token}`
-                            },
-                            body: JSON.stringify({
-                                products: [{ productId, quantity: 1 }]
-                            })
+                            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                            body: JSON.stringify({ products: [{ productId, quantity: 1 }] })
                         });
 
                         const orderData = await orderResponse.json();
@@ -154,7 +148,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         }
                     } catch (error) {
                         console.error("Error placing order:", error);
-                        alert("Error placing order. Please try again.");
                     }
                 }
             });
@@ -166,7 +159,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             button.addEventListener("click", async (e) => {
                 const productId = e.target.dataset.id;
                 const token = localStorage.getItem("token");
-
                 if (!token || localStorage.getItem("userRole") !== "admin") {
                     alert("Only admin can delete products!");
                     return;
@@ -178,14 +170,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                             method: "DELETE",
                             headers: { "Authorization": `Bearer ${token}` }
                         });
-
-                        const data = await response.json();
-                        if (response.ok) {
-                            alert("✅ Product deleted successfully!");
-                            loadProducts(); // Обновляем список продуктов после удаления
-                        } else {
-                            alert(data.error || "❌ Failed to delete product.");
-                        }
+                        if (response.ok) loadProducts();
                     } catch (error) {
                         console.error("Error deleting product:", error);
                     }
@@ -193,8 +178,4 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
     };
-
-    if (productList) {
-        loadProducts();
-    }
 });
