@@ -1,3 +1,4 @@
+/* Основные стили */
 body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
@@ -5,6 +6,7 @@ body {
     background-color: #f9f9f9;
 }
 
+/* Хедер и навигация */
 header {
     background-color: #1a1a1a;
     color: white;
@@ -53,6 +55,7 @@ nav button:hover {
     background-color: #666;
 }
 
+/* Форма авторизации */
 .auth-container {
     display: flex;
     justify-content: center;
@@ -95,6 +98,7 @@ nav button:hover {
     background-color: #b08a2e;
 }
 
+/* Список товаров и заказов */
 .products, .orders-container {
     max-width: 1200px;
     margin: 20px auto;
@@ -122,7 +126,8 @@ nav button:hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-.buy-btn, .delete-btn {
+/* Кнопки */
+.buy-btn, .delete-btn, .add-product-btn {
     background-color: #d4af37;
     color: black;
     border: none;
@@ -134,6 +139,77 @@ nav button:hover {
     transition: background-color 0.3s;
 }
 
-.buy-btn:hover, .delete-btn:hover {
+.buy-btn:hover, .delete-btn:hover, .add-product-btn:hover {
     background-color: #b08a2e;
 }
+
+/* Админ-панель */
+.admin-panel {
+    max-width: 1200px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.admin-panel h2 {
+    color: #1a1a1a;
+}
+
+/* Форма добавления товаров */
+#add-product-form {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    margin: auto;
+}
+
+#add-product-form input, 
+#add-product-form textarea, 
+#add-product-form button {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#add-product-form button {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+}
+
+#add-product-form button:hover {
+    background-color: #218838;
+}
+
+/* Пользователи и заказы для админов */
+#user-list, #admin-orders {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.user-card, .admin-order-card {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+    width: 80%;
+}
+
+.user-card button, .admin-order-card button {
+    margin-top: 10px;
+    background-color: #dc3545;
+    color: white;
+}
+
+.user-card button:hover, .admin-order-card button:hover {
+    background-color: #c82333;
+}
+
