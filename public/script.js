@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const url = isLogin ? `https://final-project-afz0.onrender.com/api/login` : `https://final-project-afz0.onrender.com/api/register`;
+        const url = isLogin ? `https://final-project-afz0.onrender.com/api/auth/login` : `https://final-project-afz0.onrender.com/api/auth/register`;
 
         try {
             const response = await fetch(url, {
