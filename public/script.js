@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", async () => {
-
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
     const authForm = document.getElementById("auth-form");
@@ -10,10 +9,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const toggleRegister = document.getElementById("toggle-register");
     const userDisplay = document.getElementById("user-info");
     const productList = document.getElementById("product-list");
-    const orderList = document.getElementById("order-list");
-
+    const adminPanel = document.getElementById("admin-panel");
+    
     let isLogin = true;
 
+    // Переключение между входом и регистрацией
     toggleRegister.addEventListener("click", (e) => {
         e.preventDefault();
         isLogin = !isLogin;
@@ -33,6 +33,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         loginBtn.style.display = "none";
         logoutBtn.style.display = "inline-block";
         userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
+        
+        if (userRole === "admin") {
+            adminPanel.style.display = "block";
+        }
     }
 
     logoutBtn.addEventListener("click", () => {
@@ -50,8 +54,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const url = isLogin ? `https://final-project-afz0.onrender.com/api/auth/login` : `https://final-project-afz0.onrender.com/api/auth/register`;
-        const body = isLogin ? { email, password } : { email, password, role: "user" }; // Передаем роль по умолчанию
+        const url = isLogin ? 
+            `https://final-project-afz0.onrender.com/api/auth/login` : 
+            `https://final-project-afz0.onrender.com/api/auth/register`;
+
+        const body = isLogin ? { email, password } : { email, password, role: "user" };
 
         try {
             const response = await fetch(url, {
@@ -64,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (response.ok) {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userEmail", email);
-                localStorage.setItem("userRole", data.role); // Сохраняем роль пользователя
+                localStorage.setItem("userRole", data.role);
                 window.location.href = "index.html";
             } else {
                 alert(data.error || "Authentication failed.");
@@ -80,7 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const response = await fetch(`https://final-project-afz0.onrender.com/api/products`);
             const products = await response.json();
-
             productList.innerHTML = "";
 
             if (products.length === 0) {
@@ -98,10 +104,17 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <span>$${product.price || 'N/A'}</span>
                     <button class="buy-btn" data-id="${product._id}">Buy</button>
                 `;
+
+                if (userRole === "admin") {
+                    productCard.innerHTML += `
+                        <button class="delete-btn" data-id="${product._id}">Delete</button>
+                    `;
+                }
                 productList.appendChild(productCard);
             });
 
             attachBuyButtons();
+            attachDeleteButtons();
         } catch (error) {
             console.error("Error fetching products:", error);
             productList.innerHTML = "<p>Failed to load products.</p>";
@@ -141,6 +154,39 @@ document.addEventListener("DOMContentLoaded", async () => {
                     } catch (error) {
                         console.error("Error placing order:", error);
                         alert("Error placing order. Please try again.");
+                    }
+                }
+            });
+        });
+    };
+
+    const attachDeleteButtons = () => {
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const productId = e.target.dataset.id;
+                const token = localStorage.getItem("token");
+
+                if (!token || userRole !== "admin") {
+                    alert("Only admin can delete products!");
+                    return;
+                }
+
+                if (confirm("Are you sure you want to delete this product?")) {
+                    try {
+                        const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
+                            method: "DELETE",
+                            headers: { "Authorization": `Bearer ${token}` }
+                        });
+
+                        const data = await response.json();
+                        if (response.ok) {
+                            alert("✅ Product deleted successfully!");
+                            loadProducts();
+                        } else {
+                            alert(data.error || "❌ Failed to delete product.");
+                        }
+                    } catch (error) {
+                        console.error("Error deleting product:", error);
                     }
                 }
             });
