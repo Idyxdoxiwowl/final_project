@@ -8,40 +8,31 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Регистрация пользователя
 exports.registerUser = async (req, res) => {
     try {
-        // Валидация входных данных
-        const { error } = registerSchema.validate(req.body);
-        if (error) return res.status(400).json({ error: error.details[0].message });
+        const { email, password } = req.body;
 
-        const { email, password, role } = req.body;
         const existingUser = await User.findOne({ email });
-
         if (existingUser) {
             return res.status(400).json({ error: "User already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({
-            email,
-            password: hashedPassword,
-            role: role || "user" // По умолчанию пользователь
-        });
+        
+        // Если email соответствует админскому — роль "admin", иначе "user"
+        const role = email === "admin@example.com" ? "admin" : "user";
 
+        const newUser = new User({ email, password: hashedPassword, role });
         await newUser.save();
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (err) {
-        console.error("Register Error:", err);
-        res.status(500).json({ error: "Server error. Please try again later." });
+        res.status(500).json({ error: err.message });
     }
 };
+
 
 // Авторизация пользователя
 exports.loginUser = async (req, res) => {
     try {
-        // Валидация входных данных
-        const { error } = loginSchema.validate(req.body);
-        if (error) return res.status(400).json({ error: error.details[0].message });
-
         const { email, password } = req.body;
         const user = await User.findOne({ email });
 
@@ -54,16 +45,11 @@ exports.loginUser = async (req, res) => {
             return res.status(400).json({ error: "Invalid password" });
         }
 
-        const token = jwt.sign(
-            { userId: user._id, email: user.email, role: user.role },
-            JWT_SECRET,
-            { expiresIn: "2h" }
-        );
+        const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "2h" });
 
-        res.json({ token, email: user.email, role: user.role });
+        res.json({ token, email: user.email, role: user.role }); // Теперь возвращаем роль
     } catch (err) {
-        console.error("Login Error:", err);
-        res.status(500).json({ error: "Server error. Please try again later." });
+        res.status(500).json({ error: err.message });
     }
 };
 
