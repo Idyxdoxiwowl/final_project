@@ -12,7 +12,7 @@ exports.registerUser = async (req, res) => {
         const { error } = registerSchema.validate(req.body);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
-        const { name, email, password, role } = req.body;
+        const { email, password, role } = req.body;
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -20,7 +20,7 @@ exports.registerUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, email, password: hashedPassword, role: role || "user" });
+        const newUser = new User({ email, password: hashedPassword, role: role || "user" });
         await newUser.save();
 
         res.status(201).json({ message: "User registered successfully" });
@@ -72,14 +72,13 @@ exports.getProfile = async (req, res) => {
 // Обновление профиля пользователя
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, email } = req.body;
+        const { email } = req.body;
         const user = await User.findById(req.user.userId);
 
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        user.name = name || user.name;
         user.email = email || user.email;
         await user.save();
 
