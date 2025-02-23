@@ -212,4 +212,10 @@ nav button:hover {
 .user-card button:hover, .admin-order-card button:hover {
     background-color: #c82333;
 }
+.product-card img {
+    width: 100%;       /* Чтобы картинка занимала всю ширину карточки */
+    height: 200px;     /* Фиксированная высота */
+    object-fit: cover; /* Обрезка, чтобы картинка не искажалась */
+    border-radius: 5px;
+}
 
