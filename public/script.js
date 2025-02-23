@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const productList = document.getElementById("product-list");
     const adminPanel = document.getElementById("admin-panel");
     const userList = document.getElementById("user-list");
+    const adminOrderList = document.getElementById("admin-orders");
 
     let isLogin = true;
 
@@ -230,5 +231,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadProducts();
     if (userRole === "admin") {
         loadUsers();
+        loadAdminOrders();
     }
 });
