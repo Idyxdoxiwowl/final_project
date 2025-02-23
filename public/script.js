@@ -14,10 +14,80 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let isLogin = true;
 
-    // Функция загрузки товаров
-    const loadProducts = async () => {
-        const token = localStorage.getItem("token");
+    // Переключение между логином и регистрацией
+    toggleRegister.addEventListener("click", (e) => {
+        e.preventDefault();
+        isLogin = !isLogin;
+        authTitle.textContent = isLogin ? "Login" : "Register";
+        submitAuth.textContent = isLogin ? "Login" : "Register";
+        toggleRegister.innerHTML = isLogin
+            ? "Don't have an account? <a href='#'>Register here</a>"
+            : "Already have an account? <a href='#'>Login here</a>";
+    });
 
+    // Проверка токена
+    const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("userEmail");
+    const userRole = localStorage.getItem("userRole");
+
+    if (token && userEmail) {
+        authForm.style.display = "none";
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+        userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
+
+        if (userRole === "admin") {
+            adminPanel.style.display = "block";
+        }
+    }
+
+    // Выход из аккаунта (работает корректно)
+    logoutBtn.addEventListener("click", () => {
+        localStorage.clear();
+        setTimeout(() => {
+            location.href = "index.html";
+        }, 100);
+    });
+
+    // Авторизация / регистрация
+    submitAuth.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        if (!email || !password) {
+            alert("Please enter both email and password.");
+            return;
+        }
+
+        const url = isLogin
+            ? "https://final-project-afz0.onrender.com/api/auth/login"
+            : "https://final-project-afz0.onrender.com/api/auth/register";
+
+        const body = isLogin ? { email, password } : { email, password, role: "user" };
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("userRole", data.role);
+                location.href = "index.html";
+            } else {
+                alert(data.error || "Authentication failed.");
+            }
+        } catch (error) {
+            console.error("Auth error:", error);
+            alert("Server error. Please try again later.");
+        }
+    });
+
+    // Загрузка товаров
+    async function loadProducts() {
         try {
             const response = await fetch("https://final-project-afz0.onrender.com/api/products", {
                 method: "GET",
@@ -59,88 +129,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("Error fetching products:", error);
             productList.innerHTML = "<p>Failed to load products.</p>";
         }
-    };
-
-    // Переключение между входом и регистрацией
-    toggleRegister.addEventListener("click", (e) => {
-        e.preventDefault();
-        isLogin = !isLogin;
-        authTitle.textContent = isLogin ? "Login" : "Register";
-        submitAuth.textContent = isLogin ? "Login" : "Register";
-        toggleRegister.innerHTML = isLogin
-            ? "Don't have an account? <a href='#'>Register here</a>"
-            : "Already have an account? <a href='#'>Login here</a>";
-    });
-
-    // Проверка токена
-    const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("userEmail");
-    const userRole = localStorage.getItem("userRole");
-
-    if (token && userEmail) {
-        authForm.style.display = "none";
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
-
-        if (userRole === "admin") {
-            adminPanel.style.display = "block";
-            loadUsers();
-        }
     }
 
-    // Выход из аккаунта
-    logoutBtn.addEventListener("click", () => {
-        localStorage.clear();
-        setTimeout(() => {
-            location.reload();
-        }, 100);
-    });
-
-    // Авторизация / регистрация
-    submitAuth.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-        if (!email || !password) {
-            alert("Please enter both email and password.");
-            return;
-        }
-
-        const url = isLogin
-            ? "https://final-project-afz0.onrender.com/api/auth/login"
-            : "https://final-project-afz0.onrender.com/api/auth/register";
-
-        const body = isLogin ? { email, password } : { email, password, role: "user" };
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("userEmail", email);
-                localStorage.setItem("userRole", data.role);
-                location.href = "index.html";
-            } else {
-                alert(data.error || "Authentication failed.");
-            }
-        } catch (error) {
-            console.error("Auth error:", error);
-            alert("Server error. Please try again later.");
-        }
-    });
-
     // Покупка товара
-    const attachBuyButtons = () => {
+    function attachBuyButtons() {
         document.querySelectorAll(".buy-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
                 const productId = e.target.dataset.id;
-                const token = localStorage.getItem("token");
-
                 if (!token) {
                     alert("You need to log in to place an order!");
                     return;
@@ -159,15 +154,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             });
         });
-    };
+    }
 
     // Удаление товара (для админов)
-    const attachDeleteButtons = () => {
+    function attachDeleteButtons() {
         document.querySelectorAll(".delete-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
                 const productId = e.target.dataset.id;
-                const token = localStorage.getItem("token");
-
                 if (!token || userRole !== "admin") {
                     alert("Only admin can delete products!");
                     return;
@@ -188,10 +181,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             });
         });
-    };
+    }
 
     // Загрузка пользователей (для админа)
-    const loadUsers = async () => {
+    async function loadUsers() {
         try {
             const response = await fetch("https://final-project-afz0.onrender.com/api/auth/users", {
                 headers: { "Authorization": `Bearer ${token}` },
@@ -212,10 +205,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         } catch (error) {
             console.error("Error fetching users:", error);
         }
-    };
+    }
 
     // Удаление пользователей (для админа)
-    const attachDeleteUserButtons = () => {
+    function attachDeleteUserButtons() {
         document.querySelectorAll(".delete-user-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
                 const userId = e.target.dataset.id;
@@ -231,7 +224,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             });
         });
-    };
+    }
 
+    // Загружаем данные после определения всех функций
     loadProducts();
+    if (userRole === "admin") {
+        loadUsers();
+    }
 });
