@@ -3,7 +3,7 @@ const Product = require("../models/Product");
 // Получение товаров (Read)
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.aggregate([{ $sample: { size: 6 } }]);
+    const products = await Product.aggregate([{ $sample: { size: 8 } }]);
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: "Error fetching products" });
