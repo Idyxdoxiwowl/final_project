@@ -10,14 +10,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userDisplay = document.getElementById("user-info");
     const productList = document.getElementById("product-list");
     const adminPanel = document.getElementById("admin-panel");
-    const addProductForm = document.getElementById("add-product-form");
-    const orderList = document.getElementById("order-list");
     const userList = document.getElementById("user-list");
-    const adminOrderList = document.getElementById("admin-orders");
 
     let isLogin = true;
-    const API_URL = "https://final-project-afz0.onrender.com/api";
 
+    // Переключение между логином и регистрацией
     toggleRegister.addEventListener("click", (e) => {
         e.preventDefault();
         isLogin = !isLogin;
@@ -28,6 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : "Already have an account? <a href='#'>Login here</a>";
     });
 
+    // Проверка авторизации
     const token = localStorage.getItem("token");
     const userEmail = localStorage.getItem("userEmail");
     const userRole = localStorage.getItem("userRole");
@@ -40,16 +38,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (userRole === "admin") {
             adminPanel.style.display = "block";
-            loadAllUsers();
-            loadAdminOrders();
+            loadUsers();
         }
+
+        loadProducts();
     }
 
+    // Выход из аккаунта
     logoutBtn.addEventListener("click", () => {
         localStorage.clear();
-        location.href = "index.html";
+        location.reload();
     });
 
+    // Авторизация / регистрация
     submitAuth.addEventListener("click", async () => {
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
@@ -58,7 +59,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const url = isLogin ? `${API_URL}/auth/login` : `${API_URL}/auth/register`;
+        const url = isLogin ? 
+            "https://final-project-afz0.onrender.com/api/auth/login" : 
+            "https://final-project-afz0.onrender.com/api/auth/register";
+
         const body = isLogin ? { email, password } : { email, password, role: "user" };
 
         try {
@@ -83,12 +87,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
+    // Загрузка товаров
     const loadProducts = async () => {
         try {
-            const response = await fetch(`${API_URL}/products`);
+            const response = await fetch("https://final-project-afz0.onrender.com/api/products");
             const products = await response.json();
-
-            if (!productList) return;
             productList.innerHTML = "";
 
             if (products.length === 0) {
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const productCard = document.createElement("div");
                 productCard.classList.add("product-card");
                 productCard.innerHTML = `
-                    <img src="${product.image || 'placeholder.jpg'}" alt="${product.name}">
+                    <img src="${product.image}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <p>${product.description}</p>
                     <span>$${product.price}</span>
@@ -123,6 +126,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
+    // Покупка товара
     const attachBuyButtons = () => {
         document.querySelectorAll(".buy-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -135,9 +139,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 try {
-                    const response = await fetch(`${API_URL}/orders`, {
+                    const response = await fetch("https://final-project-afz0.onrender.com/api/orders", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                         body: JSON.stringify({ products: [{ productId, quantity: 1 }] })
                     });
 
@@ -149,6 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     };
 
+    // Удаление товара (для админов)
     const attachDeleteButtons = () => {
         document.querySelectorAll(".delete-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -161,9 +166,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 try {
-                    const response = await fetch(`${API_URL}/products/${productId}`, {
+                    const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
                         method: "DELETE",
-                        headers: { "Authorization": "Bearer " + token }
+                        headers: { "Authorization": `Bearer ${token}` }
                     });
 
                     if (response.ok) {
@@ -177,12 +182,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     };
 
-    const loadAllUsers = async () => {
+    // Загрузка пользователей (для админа)
+    const loadUsers = async () => {
         try {
-            const response = await fetch(`${API_URL}/auth/users`);
+            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/users", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
             const users = await response.json();
-
-            if (!userList) return;
             userList.innerHTML = "";
 
             users.forEach(user => {
@@ -200,19 +206,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
+    // Удаление пользователей (для админа)
     const attachDeleteUserButtons = () => {
         document.querySelectorAll(".delete-user-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
                 const userId = e.target.dataset.id;
-                const token = localStorage.getItem("token");
-
                 try {
-                    await fetch(`${API_URL}/auth/users/${userId}`, {
+                    await fetch(`https://final-project-afz0.onrender.com/api/auth/users/${userId}`, {
                         method: "DELETE",
-                        headers: { "Authorization": "Bearer " + token }
+                        headers: { "Authorization": `Bearer ${token}` }
                     });
 
-                    loadAllUsers();
+                    loadUsers();
                 } catch (error) {
                     console.error("Error deleting user:", error);
                 }
