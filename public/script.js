@@ -14,83 +14,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let isLogin = true;
 
-    // Переключение между логином и регистрацией
-    toggleRegister.addEventListener("click", (e) => {
-        e.preventDefault();
-        isLogin = !isLogin;
-        authTitle.textContent = isLogin ? "Login" : "Register";
-        submitAuth.textContent = isLogin ? "Login" : "Register";
-        toggleRegister.innerHTML = isLogin 
-            ? "Don't have an account? <a href='#'>Register here</a>" 
-            : "Already have an account? <a href='#'>Login here</a>";
-    });
-
-    // Проверка авторизации
-    const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("userEmail");
-    const userRole = localStorage.getItem("userRole");
-
-    if (token && userEmail) {
-        authForm.style.display = "none";
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
-
-        if (userRole === "admin") {
-            adminPanel.style.display = "block";
-            loadUsers();
-        }
-
-        loadProducts();
-    }
-
-    // Выход из аккаунта
-    logoutBtn.addEventListener("click", () => {
-        localStorage.clear();
-        location.reload();
-    });
-
-    // Авторизация / регистрация
-    submitAuth.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-        if (!email || !password) {
-            alert("Please enter both email and password.");
-            return;
-        }
-
-        const url = isLogin ? 
-            "https://final-project-afz0.onrender.com/api/auth/login" : 
-            "https://final-project-afz0.onrender.com/api/auth/register";
-
-        const body = isLogin ? { email, password } : { email, password, role: "user" };
+    // Функция загрузки товаров
+    const loadProducts = async () => {
+        const token = localStorage.getItem("token");
 
         try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
+            const response = await fetch("https://final-project-afz0.onrender.com/api/products", {
+                method: "GET",
+                headers: token ? { "Authorization": `Bearer ${token}` } : {},
             });
 
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("userEmail", email);
-                localStorage.setItem("userRole", data.role);
-                location.href = "index.html";
-            } else {
-                alert(data.error || "Authentication failed.");
-            }
-        } catch (error) {
-            console.error("Auth error:", error);
-            alert("Server error. Please try again later.");
-        }
-    });
+            if (!response.ok) throw new Error("Failed to fetch products");
 
-    // Загрузка товаров
-    const loadProducts = async () => {
-        try {
-            const response = await fetch("https://final-project-afz0.onrender.com/api/products");
             const products = await response.json();
             productList.innerHTML = "";
 
@@ -103,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const productCard = document.createElement("div");
                 productCard.classList.add("product-card");
                 productCard.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
+                    <img src="${product.image || 'placeholder.jpg'}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <p>${product.description}</p>
                     <span>$${product.price}</span>
@@ -126,6 +61,79 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
+    // Переключение между входом и регистрацией
+    toggleRegister.addEventListener("click", (e) => {
+        e.preventDefault();
+        isLogin = !isLogin;
+        authTitle.textContent = isLogin ? "Login" : "Register";
+        submitAuth.textContent = isLogin ? "Login" : "Register";
+        toggleRegister.innerHTML = isLogin
+            ? "Don't have an account? <a href='#'>Register here</a>"
+            : "Already have an account? <a href='#'>Login here</a>";
+    });
+
+    // Проверка токена
+    const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("userEmail");
+    const userRole = localStorage.getItem("userRole");
+
+    if (token && userEmail) {
+        authForm.style.display = "none";
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+        userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
+
+        if (userRole === "admin") {
+            adminPanel.style.display = "block";
+            loadUsers();
+        }
+    }
+
+    // Выход из аккаунта
+    logoutBtn.addEventListener("click", () => {
+        localStorage.clear();
+        setTimeout(() => {
+            location.reload();
+        }, 100);
+    });
+
+    // Авторизация / регистрация
+    submitAuth.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        if (!email || !password) {
+            alert("Please enter both email and password.");
+            return;
+        }
+
+        const url = isLogin
+            ? "https://final-project-afz0.onrender.com/api/auth/login"
+            : "https://final-project-afz0.onrender.com/api/auth/register";
+
+        const body = isLogin ? { email, password } : { email, password, role: "user" };
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("userRole", data.role);
+                location.href = "index.html";
+            } else {
+                alert(data.error || "Authentication failed.");
+            }
+        } catch (error) {
+            console.error("Auth error:", error);
+            alert("Server error. Please try again later.");
+        }
+    });
+
     // Покупка товара
     const attachBuyButtons = () => {
         document.querySelectorAll(".buy-btn").forEach(button => {
@@ -142,7 +150,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const response = await fetch("https://final-project-afz0.onrender.com/api/orders", {
                         method: "POST",
                         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                        body: JSON.stringify({ products: [{ productId, quantity: 1 }] })
+                        body: JSON.stringify({ products: [{ productId, quantity: 1 }] }),
                     });
 
                     if (response.ok) alert("✅ Order placed successfully!");
@@ -168,7 +176,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 try {
                     const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
                         method: "DELETE",
-                        headers: { "Authorization": `Bearer ${token}` }
+                        headers: { "Authorization": `Bearer ${token}` },
                     });
 
                     if (response.ok) {
@@ -186,7 +194,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loadUsers = async () => {
         try {
             const response = await fetch("https://final-project-afz0.onrender.com/api/auth/users", {
-                headers: { "Authorization": `Bearer ${token}` }
+                headers: { "Authorization": `Bearer ${token}` },
             });
             const users = await response.json();
             userList.innerHTML = "";
@@ -214,7 +222,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 try {
                     await fetch(`https://final-project-afz0.onrender.com/api/auth/users/${userId}`, {
                         method: "DELETE",
-                        headers: { "Authorization": `Bearer ${token}` }
+                        headers: { "Authorization": `Bearer ${token}` },
                     });
 
                     loadUsers();
@@ -225,7 +233,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     };
 
-    if (productList) {
-        loadProducts();
-    }
+    loadProducts();
 });
