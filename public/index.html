@@ -56,27 +56,27 @@
                 <button type="submit">Add Product</button>
             </form>
 
-
             <!-- Управление пользователями -->
             <h3>All Users</h3>
             <div id="user-list"></div>
-
         </section>
         
         <!-- Раздел товаров -->
         <section class="products">
-            <h2>Our Collection</h2>
+            <h2>Our Products</h2>
             <div id="product-list" class="product-grid"></div>
         </section>
 
-        <!-- Обновление профиля -->
-        <section class="profile-section" id="profile-section" style="display: none;">
+        <!-- Обновление профиля (Попап) -->
+        <div class="profile-overlay" id="profile-overlay"></div>
+        <section class="profile-section" id="profile-section">
             <h2>Profile</h2>
             <p id="profile-email"></p>
             <button id="update-profile-btn">Update Email</button>
+            <button id="close-profile-btn">Close</button>
         </section>
     </main>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
