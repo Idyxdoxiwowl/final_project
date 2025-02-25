@@ -41,7 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (userRole === "admin") {
             adminPanel.style.display = "block";
-            loadUsers();
         }
 
         profileSection.style.display = "block";
@@ -190,6 +189,48 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    async function loadUsers() {
+        try {
+            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/users", {
+                headers: { "Authorization": `Bearer ${token}` },
+            });
+            const users = await response.json();
+            userList.innerHTML = "";
+
+            users.forEach(user => {
+                const userItem = document.createElement("div");
+                userItem.innerHTML = `
+                    <p>${user.email} (${user.role})</p>
+                    <button class="delete-user-btn" data-id="${user._id}">Delete</button>
+                `;
+                userList.appendChild(userItem);
+            });
+
+            attachDeleteUserButtons();
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    }
+
+    // Удаление пользователей (для админа)
+    function attachDeleteUserButtons() {
+        document.querySelectorAll(".delete-user-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const userId = e.target.dataset.id;
+                try {
+                    await fetch(`https://final-project-afz0.onrender.com/api/auth/users/${userId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` },
+                    });
+
+                    loadUsers();
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                }
+            });
+        });
+    }
+
     // Загрузка профиля
     async function loadUserProfile() {
         const token = localStorage.getItem("token");
@@ -243,6 +284,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("Error updating profile:", error);
         }
     });
+
+    function attachDeleteUserButtons() {
+        document.querySelectorAll(".delete-user-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const userId = e.target.dataset.id;
+                try {
+                    await fetch(`https://final-project-afz0.onrender.com/api/auth/users/${userId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` },
+                    });
+
+                    loadUsers();
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                }
+            });
+        });
+    }
 
     loadProducts();
     if (userRole === "admin") {
