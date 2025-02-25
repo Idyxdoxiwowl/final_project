@@ -32,16 +32,6 @@
             </div>
         </section>
 
-        <!-- Popup для профиля -->
-        <div id="profile-popup" class="popup">
-            <div class="popup-content">
-                <span class="close-popup">&times;</span>
-                <h2>Profile</h2>
-                <p id="popup-profile-email"></p>
-                <button id="update-profile-btn">Update Email</button>
-            </div>
-        </div>
-
         <!-- Панель администратора -->
         <section class="admin-panel" id="admin-panel" style="display: none;">
             <h2>Admin Panel</h2>
@@ -59,12 +49,20 @@
             <!-- Управление пользователями -->
             <h3>All Users</h3>
             <div id="user-list"></div>
+
         </section>
         
         <!-- Раздел товаров -->
         <section class="products">
             <h2>Our Collection</h2>
             <div id="product-list" class="product-grid"></div>
+        </section>
+
+        <!-- Обновление профиля -->
+        <section class="profile-section" id="profile-section" style="display: none;">
+            <h2>Profile</h2>
+            <p id="profile-email"></p>
+            <button id="update-profile-btn">Update Email</button>
         </section>
     </main>
     
