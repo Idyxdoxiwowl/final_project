@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : "Already have an account? <a href='#'>Login here</a>";
     });
 
-    // Проверка токена
+    // Проверка токена и роли пользователя
     const token = localStorage.getItem("token");
     const userEmail = localStorage.getItem("userEmail");
     const userRole = localStorage.getItem("userRole");
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (userRole === "admin") {
             adminPanel.style.display = "block";
-            await loadUsers();
+            loadUsers();
         }
 
         profileSection.style.display = "block";
@@ -193,63 +193,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Загрузка профиля
     async function loadUserProfile() {
         try {
-            console.log("Fetching profile..."); // ✅ Логируем запрос
-    
             const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
-                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                headers: { "Authorization": `Bearer ${token}` },
             });
-    
-            if (!response.ok) throw new Error(`Failed to fetch profile: ${response.status}`);
-    
-            const user = await response.json();
-            console.log("Profile Data:", user); // ✅ Проверяем, пришел ли email
-    
-            if (!user.email) {
-                profileEmail.innerText = "Email not found!";
-            } else {
-                profileEmail.innerText = `Email: ${user.email}`;
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch profile: ${response.status}`);
             }
+
+            const user = await response.json();
+            profileEmail.innerText = `Email: ${user.email}`;
         } catch (error) {
             console.error("Error loading profile:", error);
-            profileEmail.innerText = "Error loading profile"; // Показываем ошибку в UI
+            profileEmail.innerText = "Error loading profile";
         }
     }
-    
-    
 
     // Обновление профиля
     updateProfileBtn.addEventListener("click", async () => {
         const newEmail = prompt("Enter new email:");
         if (!newEmail) return;
-    
+
         try {
             const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                 body: JSON.stringify({ email: newEmail }),
             });
-    
-            const data = await response.json();
-            if (response.ok) {
-                alert("✅ Profile updated successfully!");
-                localStorage.setItem("userEmail", newEmail); // ✅ Обновляем email в локальном хранилище
-                loadUserProfile();
-            } else {
-                alert("❌ Failed to update profile: " + data.error);
+
+            if (!response.ok) {
+                throw new Error(`Failed to update profile: ${response.status}`);
             }
+
+            alert("✅ Profile updated successfully!");
+            loadUserProfile();
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert("❌ Server error. Please try again later.");
         }
     });
-    
 
-    // Загружаем данные после определения всех функций
     loadProducts();
     if (userRole === "admin") {
-        await loadUsers();
+        loadUsers();
     }
 });
