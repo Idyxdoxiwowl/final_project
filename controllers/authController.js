@@ -87,31 +87,42 @@ exports.getProfile = async (req, res) => {
 // Обновление профиля пользователя
 exports.updateProfile = async (req, res) => {
     try {
+        console.log("🔍 Обновление профиля, полученный user:", req.user); // ✅ Лог
+
         const { email } = req.body;
         if (!email) {
             return res.status(400).json({ error: "Email is required" });
         }
 
-        const user = await User.findById(req.user.userId);
+        // Убедимся, что пользователь передается
+        if (!req.user || !req.user._id) {
+            console.error("❌ Ошибка: Пользователь не найден");
+            return res.status(401).json({ error: "Unauthorized: No user found" });
+        }
+
+        const user = await User.findById(req.user._id);
         if (!user) {
+            console.error("❌ Ошибка: Пользователь не найден в базе данных");
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Проверяем, чтобы email не был уже занят
+        // Проверяем, чтобы email не был уже занят другим пользователем
         const emailExists = await User.findOne({ email });
-        if (emailExists && emailExists._id.toString() !== req.user.userId) {
+        if (emailExists && emailExists._id.toString() !== req.user._id.toString()) {
             return res.status(400).json({ error: "This email is already in use" });
         }
 
         user.email = email;
         await user.save(); // Сохраняем обновленный email в MongoDB
 
+        console.log("✅ Обновленный профиль:", user); // ✅ Лог
         res.json({ message: "Profile updated successfully!", email: user.email });
     } catch (error) {
-        console.error("Profile Update Error:", error);
+        console.error("❌ Ошибка обновления профиля:", error);
         res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
+
 
 
 // Получение списка всех пользователей (для админов)
