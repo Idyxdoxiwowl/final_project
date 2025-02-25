@@ -192,22 +192,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Загрузка профиля
     async function loadUserProfile() {
+        const token = localStorage.getItem("token");
+    
+        if (!token) {
+            console.error("❌ Ошибка: Токен отсутствует в localStorage");
+            return;
+        }
+    
+        console.log("🔍 Отправка запроса с токеном:", token); // ✅ Лог отправляемого токена
+    
         try {
             const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
+                method: "GET",
                 headers: { "Authorization": `Bearer ${token}` },
             });
-
+    
             if (!response.ok) {
                 throw new Error(`Failed to fetch profile: ${response.status}`);
             }
-
+    
             const user = await response.json();
-            profileEmail.innerText = `Email: ${user.email}`;
+            console.log("✅ Получен профиль:", user); // ✅ Лог полученных данных
+    
+            document.getElementById("profile-email").innerText = `Email: ${user.email}`;
         } catch (error) {
-            console.error("Error loading profile:", error);
-            profileEmail.innerText = "Error loading profile";
+            console.error("❌ Ошибка загрузки профиля:", error);
         }
     }
+    
 
     // Обновление профиля
     updateProfileBtn.addEventListener("click", async () => {
