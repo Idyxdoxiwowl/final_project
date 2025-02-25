@@ -41,11 +41,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (userRole === "admin") {
             adminPanel.style.display = "block";
-            loadUsers();
+            await loadUsers();
         }
 
         profileSection.style.display = "block";
-        loadUserProfile();
+        await loadUserProfile();
     }
 
     // Выход из аккаунта
@@ -225,6 +225,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Загружаем данные после определения всех функций
     loadProducts();
     if (userRole === "admin") {
-        loadUsers();
+        await loadUsers();
     }
 });
