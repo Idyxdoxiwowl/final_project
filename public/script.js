@@ -124,14 +124,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (userRole === "admin") {
                     productCard.innerHTML += `
+                        <button class="edit-btn" data-id="${product._id}">Edit</button>
                         <button class="delete-btn" data-id="${product._id}">Delete</button>
                     `;
-                }
+                }                
                 productList.appendChild(productCard);
             });
 
             attachBuyButtons();
             attachDeleteButtons();
+            attachEditButtons();
         } catch (error) {
             console.error("Error fetching products:", error);
             productList.innerHTML = "<p>Failed to load products.</p>";
@@ -257,6 +259,49 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("Error fetching users:", error);
         }
     }
+
+    function attachEditButtons() {
+        document.querySelectorAll(".edit-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const productId = e.target.dataset.id;
+                if (!token || userRole !== "admin") {
+                    alert("Only admin can edit products!");
+                    return;
+                }
+    
+                const newName = prompt("Enter new product name:");
+                const newPrice = prompt("Enter new price:");
+                const newDescription = prompt("Enter new description:");
+                const newImage = prompt("Enter new image URL:");
+    
+                if (!newName || !newPrice || !newDescription || !newImage) return;
+    
+                try {
+                    const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            name: newName,
+                            price: parseFloat(newPrice),
+                            description: newDescription,
+                            image: newImage
+                        })
+                    });
+    
+                    if (response.ok) {
+                        alert("✅ Product updated successfully!");
+                        loadProducts(); // Обновляем список
+                    }
+                } catch (error) {
+                    console.error("Error updating product:", error);
+                }
+            });
+        });
+    }
+    
 
     // Удаление пользователей (для админа)
     function attachDeleteUserButtons() {
