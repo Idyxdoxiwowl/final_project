@@ -31,59 +31,6 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// Получение заказов пользователя (Read)
-exports.getOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({ userId: req.user.userId })
-      .populate("products.productId", "name price image");
-
-    if (!orders.length) {
-      return res.status(404).json({ message: "No orders found" });
-    }
-
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ error: "Error fetching orders" });
-  }
-};
-
-// Обновление заказа (Update)
-exports.updateOrder = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { products } = req.body;
-
-    if (!products || products.length === 0) {
-      return res.status(400).json({ error: "No products provided for update" });
-    }
-
-    const order = await Order.findOne({ _id: id, userId: req.user.userId });
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
-
-    order.products = products;
-
-    const productIds = products.map(p => p.productId);
-    const dbProducts = await Product.find({ _id: { $in: productIds } });
-
-    let totalPrice = 0;
-    products.forEach(p => {
-      const product = dbProducts.find(prod => prod._id.toString() === p.productId);
-      if (product) {
-        totalPrice += product.price * p.quantity;
-      }
-    });
-
-    order.totalPrice = totalPrice;
-    await order.save();
-
-    res.json({ message: "Order updated successfully", order });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update order" });
-  }
-};
-
 // Удаление заказа (Delete)
 exports.deleteOrder = async (req, res) => {
   try {
