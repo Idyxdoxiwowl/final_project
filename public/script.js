@@ -193,25 +193,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Загрузка профиля
     async function loadUserProfile() {
         try {
+            console.log("Fetching profile..."); // ✅ Логируем запрос
+    
             const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
                 headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             });
     
-            if (!response.ok) throw new Error("Failed to fetch profile");
+            if (!response.ok) throw new Error(`Failed to fetch profile: ${response.status}`);
     
             const user = await response.json();
-            console.log("Profile Data:", user); // ✅ Логируем данные профиля
+            console.log("Profile Data:", user); // ✅ Проверяем, пришел ли email
     
             if (!user.email) {
-                profileEmail.innerText = "Email not found!"; // 🔴 Если email нет
+                profileEmail.innerText = "Email not found!";
             } else {
                 profileEmail.innerText = `Email: ${user.email}`;
             }
         } catch (error) {
             console.error("Error loading profile:", error);
-            profileEmail.innerText = "Error loading profile"; // 🔴 Выводим ошибку на UI
+            profileEmail.innerText = "Error loading profile"; // Показываем ошибку в UI
         }
     }
+    
     
 
     // Обновление профиля
