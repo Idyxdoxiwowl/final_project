@@ -14,6 +14,7 @@
                 <a href="index.html">Home</a>
                 <a href="orders.html">My Orders</a>
                 <span id="user-info"></span>
+                <button id="profile-btn" style="display: none;">Profile</button>
                 <button id="login-btn">Login</button>
                 <button id="logout-btn" style="display: none;">Logout</button>
             </nav>
@@ -67,9 +68,9 @@
             <div id="product-list" class="product-grid"></div>
         </section>
 
-        <!-- Обновление профиля (Попап) -->
-         <div class="profile-overlay" id="profile-overlay"></div>
-         <section class="profile-section" id="profile-section">
+       <!-- Затемнение фона при открытии профиля -->
+        <div class="profile-overlay" id="profile-overlay"></div>
+        <section class="profile-section" id="profile-section">
             <h2>Profile</h2>
             <p id="profile-email"></p>
             <button id="update-profile-btn">Update Email</button>
