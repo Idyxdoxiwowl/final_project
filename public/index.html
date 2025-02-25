@@ -35,6 +35,19 @@
         <!-- Панель администратора -->
         <section class="admin-panel" id="admin-panel" style="display: none;">
             <h2>Admin Panel</h2>
+            <!-- Модальное окно редактирования товара -->
+             <div id="edit-product-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <h2>Edit Product</h2>
+                    <input type="text" id="edit-product-name" placeholder="Product Name" required>
+                    <input type="number" id="edit-product-price" placeholder="Price" required>
+                    <textarea id="edit-product-description" placeholder="Description"></textarea>
+                    <input type="text" id="edit-product-image" placeholder="Image URL">
+                    <button id="save-product-changes">Save Changes</button>
+                </div>
+            </div>
+
             
             <!-- Форма добавления товара -->
             <h3>Add New Product</h3>
