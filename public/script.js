@@ -11,10 +11,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const productList = document.getElementById("product-list");
     const adminPanel = document.getElementById("admin-panel");
     const userList = document.getElementById("user-list");
-    const profilePopup = document.getElementById("profile-popup");
-    const profileEmailPopup = document.getElementById("popup-profile-email");
-    const updateProfilePopupBtn = document.getElementById("update-profile-btn");
-    const closePopup = document.querySelector(".close-popup");
+    const profileSection = document.getElementById("profile-section");
+    const profileEmail = document.getElementById("profile-email");
+    const updateProfileBtn = document.getElementById("update-profile-btn");
 
     let isLogin = true;
 
@@ -29,6 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : "Already have an account? <a href='#'>Login here</a>";
     });
 
+    // Проверка токена и роли пользователя
     const token = localStorage.getItem("token");
     const userEmail = localStorage.getItem("userEmail");
     const userRole = localStorage.getItem("userRole");
@@ -37,16 +37,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         authForm.style.display = "none";
         loginBtn.style.display = "none";
         logoutBtn.style.display = "inline-block";
-        userDisplay.innerHTML = `<strong class="profile-trigger">👤 ${userEmail} (${userRole})</strong>`;
+        userDisplay.innerHTML = `<strong>👤 ${userEmail} (${userRole})</strong>`;
 
         if (userRole === "admin") {
             adminPanel.style.display = "block";
-            await loadUsers();
+            loadUsers();
         }
 
+        profileSection.style.display = "block";
         await loadUserProfile();
     }
 
+    // Выход из аккаунта
     logoutBtn.addEventListener("click", () => {
         localStorage.clear();
         setTimeout(() => {
@@ -54,6 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }, 100);
     });
 
+    // Авторизация / регистрация
     submitAuth.addEventListener("click", async () => {
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
@@ -90,18 +93,136 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    userDisplay.addEventListener("click", () => {
-        if (token) {
-            loadUserProfile();
-            profilePopup.style.display = "flex";
+    // Загрузка товаров
+    async function loadProducts() {
+        try {
+            const response = await fetch("https://final-project-afz0.onrender.com/api/products", {
+                method: "GET",
+                headers: token ? { "Authorization": `Bearer ${token}` } : {},
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch products");
+
+            const products = await response.json();
+            productList.innerHTML = "";
+
+            if (products.length === 0) {
+                productList.innerHTML = "<p>No products available.</p>";
+                return;
+            }
+
+            products.forEach(product => {
+                const productCard = document.createElement("div");
+                productCard.classList.add("product-card");
+                productCard.innerHTML = `
+                    <img src="${product.image || 'placeholder.jpg'}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <span>$${product.price}</span>
+                    <button class="buy-btn" data-id="${product._id}">Buy</button>
+                `;
+
+                if (userRole === "admin") {
+                    productCard.innerHTML += `
+                        <button class="delete-btn" data-id="${product._id}">Delete</button>
+                    `;
+                }
+                productList.appendChild(productCard);
+            });
+
+            attachBuyButtons();
+            attachDeleteButtons();
+        } catch (error) {
+            console.error("Error fetching products:", error);
+            productList.innerHTML = "<p>Failed to load products.</p>";
         }
-    });
+    }
 
-    closePopup.addEventListener("click", () => {
-        profilePopup.style.display = "none";
-    });
+    // Покупка товара
+    function attachBuyButtons() {
+        document.querySelectorAll(".buy-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const productId = e.target.dataset.id;
+                if (!token) {
+                    alert("You need to log in to place an order!");
+                    return;
+                }
 
-    updateProfilePopupBtn.addEventListener("click", async () => {
+                try {
+                    const response = await fetch("https://final-project-afz0.onrender.com/api/orders", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                        body: JSON.stringify({ products: [{ productId, quantity: 1 }] }),
+                    });
+
+                    if (response.ok) alert("✅ Order placed successfully!");
+                } catch (error) {
+                    console.error("Error placing order:", error);
+                }
+            });
+        });
+    }
+
+    // Удаление товара (для админов)
+    function attachDeleteButtons() {
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const productId = e.target.dataset.id;
+                if (!token || userRole !== "admin") {
+                    alert("Only admin can delete products!");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` },
+                    });
+
+                    if (response.ok) {
+                        alert("✅ Product deleted successfully!");
+                        loadProducts();
+                    }
+                } catch (error) {
+                    console.error("Error deleting product:", error);
+                }
+            });
+        });
+    }
+
+    // Загрузка профиля
+    async function loadUserProfile() {
+        const token = localStorage.getItem("token");
+    
+        if (!token) {
+            console.error("❌ Ошибка: Токен отсутствует в localStorage");
+            return;
+        }
+    
+        console.log("🔍 Отправка запроса с токеном:", token); // ✅ Лог отправляемого токена
+    
+        try {
+            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` },
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Failed to fetch profile: ${response.status}`);
+            }
+    
+            const user = await response.json();
+            console.log("✅ Получен профиль:", user); // ✅ Лог полученных данных
+    
+            document.getElementById("profile-email").innerText = `Email: ${user.email}`;
+        } catch (error) {
+            console.error("❌ Ошибка загрузки профиля:", error);
+        }
+    }
+    
+
+    // Обновление профиля
+    updateProfileBtn.addEventListener("click", async () => {
         const newEmail = prompt("Enter new email:");
         if (!newEmail) return;
 
@@ -117,67 +238,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             alert("✅ Profile updated successfully!");
-            localStorage.setItem("userEmail", newEmail);
             loadUserProfile();
         } catch (error) {
             console.error("Error updating profile:", error);
         }
     });
 
-    async function loadUserProfile() {
-        try {
-            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
-                headers: { "Authorization": `Bearer ${token}` },
-            });
-
-            if (!response.ok) throw new Error("Failed to fetch profile");
-
-            const user = await response.json();
-            profileEmailPopup.innerText = `Email: ${user.email}`;
-        } catch (error) {
-            console.error("Error loading profile:", error);
-        }
-    }
-
-    async function loadUsers() {
-        try {
-            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/users", {
-                headers: { "Authorization": `Bearer ${token}` },
-            });
-
-            const users = await response.json();
-            userList.innerHTML = "";
-
-            users.forEach(user => {
-                const userItem = document.createElement("div");
-                userItem.innerHTML = `
-                    <p>${user.email} (${user.role})</p>
-                    <button class="delete-user-btn" data-id="${user._id}">Delete</button>
-                `;
-                userList.appendChild(userItem);
-            });
-
-            attachDeleteUserButtons();
-        } catch (error) {
-            console.error("Error fetching users:", error);
-        }
-    }
-
-    function attachDeleteUserButtons() {
-        document.querySelectorAll(".delete-user-btn").forEach(button => {
-            button.addEventListener("click", async (e) => {
-                const userId = e.target.dataset.id;
-                try {
-                    await fetch(`https://final-project-afz0.onrender.com/api/auth/users/${userId}`, {
-                        method: "DELETE",
-                        headers: { "Authorization": `Bearer ${token}` },
-                    });
-
-                    loadUsers();
-                } catch (error) {
-                    console.error("Error deleting user:", error);
-                }
-            });
-        });
+    loadProducts();
+    if (userRole === "admin") {
+        loadUsers();
     }
 });
