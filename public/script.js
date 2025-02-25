@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userList = document.getElementById("user-list");
     const profileSection = document.getElementById("profile-section");
     const profileOverlay = document.getElementById("profile-overlay");
+    const closeProfileBtn = document.getElementById("close-profile-btn");
     const profileEmail = document.getElementById("profile-email");
     const updateProfileBtn = document.getElementById("update-profile-btn");
     const addProductForm = document.getElementById("add-product-form");
@@ -181,16 +182,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("❌ Error adding product:", error);
         }
     });
-    
     userDisplay.addEventListener("click", () => {
-        profileSection.style.display = "block";
-        profileOverlay.style.display = "block";
+        if (token) {
+            loadUserProfile();
+            profileOverlay.style.display = "block";
+            profileSection.style.display = "block";
+        }
     });
-    
-    // Закрытие профиля при клике на затемнённый фон
-    profileOverlay.addEventListener("click", () => {
-        profileSection.style.display = "none";
+    closeProfileBtn.addEventListener("click", () => {
         profileOverlay.style.display = "none";
+        profileSection.style.display = "none";
+    });
+    profileOverlay.addEventListener("click", () => {
+        profileOverlay.style.display = "none";
+        profileSection.style.display = "none";
     });
 
     // Покупка товара
