@@ -219,7 +219,6 @@ nav button:hover {
     border-radius: 5px;
 }
 
-/* === Profile Section (Popup) === */
 .profile-section {
     display: none; /* По умолчанию скрыто */
     position: fixed;
@@ -247,7 +246,7 @@ nav button:hover {
     margin: 10px 0;
 }
 
-#update-profile-btn {
+#update-profile-btn, #close-profile-btn {
     width: 100%;
     padding: 10px;
     background-color: #d4af37;
@@ -260,7 +259,7 @@ nav button:hover {
     transition: background 0.3s;
 }
 
-#update-profile-btn:hover {
+#update-profile-btn:hover, #close-profile-btn:hover {
     background-color: #b08a2e;
 }
 
