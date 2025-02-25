@@ -35,24 +35,29 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, description, image } = req.body;
+    const updates = req.body; // Получаем обновляемые данные
 
+    console.log("🛠 Updating product:", id, updates); // 🔍 Логируем входные данные
+
+    // Проверяем, существует ли товар
     const product = await Product.findById(id);
     if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      return res.status(404).json({ error: "❌ Product not found" });
     }
 
-    if (name) product.name = name;
-    if (price) product.price = price;
-    if (description) product.description = description;
-    if (image) product.image = image;
+    // Используем findByIdAndUpdate для более чистого кода
+    const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
+      new: true,            // Возвращаем обновленный документ
+      runValidators: true,  // Проверяем, что данные корректны по схеме
+    });
 
-    await product.save();
-    res.json({ message: "Product updated successfully", product });
+    res.json({ message: "✅ Product updated successfully!", product: updatedProduct });
   } catch (error) {
-    res.status(500).json({ error: "Error updating product" });
+    console.error("❌ Error updating product:", error); // 🔍 Логируем ошибку
+    res.status(500).json({ error: "❌ Error updating product" });
   }
 };
+
 
 // Удаление товара (Delete)
 exports.deleteProduct = async (req, res) => {
