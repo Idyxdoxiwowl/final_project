@@ -58,25 +58,26 @@ exports.loginUser = async (req, res) => {
 };
 
 // Получение профиля пользователя
-// Получение профиля пользователя
 exports.getProfile = async (req, res) => {
     try {
-        console.log("Decoded user:", req.user); // ✅ Логируем `req.user`
+        console.log("🔍 Получение профиля, user:", req.user); // ✅ Лог данных пользователя
 
-        if (!req.user || !req.user.userId) {
+        if (!req.user || !req.user._id) {
+            console.error("❌ Ошибка: Пользователь не найден");
             return res.status(401).json({ error: "Unauthorized: No user found" });
         }
 
-        const user = await User.findById(req.user.userId).select("-password");
+        const user = await User.findById(req.user._id).select("-password");
 
         if (!user) {
+            console.error("❌ Ошибка: Пользователь не найден в базе данных");
             return res.status(404).json({ error: "User not found" });
         }
 
-        console.log("Returning user profile:", user); // ✅ Логируем профиль
+        console.log("✅ Профиль найден:", user); // ✅ Лог найденного профиля
         res.json({ email: user.email });
     } catch (error) {
-        console.error("Profile Fetch Error:", error);
+        console.error("❌ Ошибка загрузки профиля:", error);
         res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
