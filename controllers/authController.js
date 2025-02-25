@@ -61,6 +61,12 @@ exports.loginUser = async (req, res) => {
 // Получение профиля пользователя
 exports.getProfile = async (req, res) => {
     try {
+        console.log("Decoded user:", req.user); // ✅ Логируем `req.user`
+
+        if (!req.user || !req.user.userId) {
+            return res.status(401).json({ error: "Unauthorized: No user found" });
+        }
+
         const user = await User.findById(req.user.userId).select("-password");
 
         if (!user) {
@@ -68,12 +74,13 @@ exports.getProfile = async (req, res) => {
         }
 
         console.log("Returning user profile:", user); // ✅ Логируем профиль
-        res.json({ email: user.email }); // ✅ Отправляем только email
+        res.json({ email: user.email });
     } catch (error) {
         console.error("Profile Fetch Error:", error);
         res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
+
 
 
 // Обновление профиля пользователя
