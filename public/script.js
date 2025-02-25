@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const adminPanel = document.getElementById("admin-panel");
     const userList = document.getElementById("user-list");
     const profileSection = document.getElementById("profile-section");
+    const profileOverlay = document.getElementById("profile-overlay");
     const profileEmail = document.getElementById("profile-email");
     const updateProfileBtn = document.getElementById("update-profile-btn");
     const addProductForm = document.getElementById("add-product-form");
@@ -181,7 +182,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
     
+    userDisplay.addEventListener("click", () => {
+        profileSection.style.display = "block";
+        profileOverlay.style.display = "block";
+    });
     
+    // Закрытие профиля при клике на затемнённый фон
+    profileOverlay.addEventListener("click", () => {
+        profileSection.style.display = "none";
+        profileOverlay.style.display = "none";
+    });
 
     // Покупка товара
     function attachBuyButtons() {
