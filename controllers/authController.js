@@ -58,13 +58,14 @@ exports.loginUser = async (req, res) => {
 };
 
 // Получение профиля пользователя
+// Получение профиля пользователя
 exports.getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId).select("-password");
+        const user = await User.findById(req.user.userId).select("email role"); // Добавлено role для проверки админских функций
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.json(user);
+        res.json({ email: user.email, role: user.role });
     } catch (error) {
         console.error("Profile Fetch Error:", error);
         res.status(500).json({ error: "Server error. Please try again later." });
@@ -75,21 +76,31 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await User.findById(req.user.userId);
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
 
+        const user = await User.findById(req.user.userId);
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        user.email = email || user.email;
-        await user.save();
+        // Проверяем, чтобы email не был уже занят
+        const emailExists = await User.findOne({ email });
+        if (emailExists && emailExists._id.toString() !== req.user.userId) {
+            return res.status(400).json({ error: "This email is already in use" });
+        }
 
-        res.json({ message: "Profile updated successfully", user });
+        user.email = email;
+        await user.save(); // Сохраняем обновленный email в MongoDB
+
+        res.json({ message: "Profile updated successfully!", email: user.email });
     } catch (error) {
         console.error("Profile Update Error:", error);
         res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
+
 
 // Получение списка всех пользователей (для админов)
 exports.getUsers = async (req, res) => {
