@@ -13,7 +13,7 @@ exports.getProducts = async (req, res) => {
 // Добавление товара (Create) (для администратора)
 exports.createProduct = async (req, res) => {
   try {
-    console.log("📥 New Product Data:", req.body); // ✅ Логируем полученные данные
+    console.log("📥 New Product Data:", req.body); 
 
     const { ref, category, name, price, tags, description, image } = req.body;
 
@@ -35,9 +35,9 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body; // Получаем обновляемые данные
+    const updates = req.body; 
 
-    console.log("🛠 Updating product:", id, updates); // 🔍 Логируем входные данные
+    console.log("🛠 Updating product:", id, updates); 
 
     // Проверяем, существует ли товар
     const product = await Product.findById(id);
@@ -53,7 +53,7 @@ exports.updateProduct = async (req, res) => {
 
     res.json({ message: "✅ Product updated successfully!", product: updatedProduct });
   } catch (error) {
-    console.error("❌ Error updating product:", error); // 🔍 Логируем ошибку
+    console.error("❌ Error updating product:", error); 
     res.status(500).json({ error: "❌ Error updating product" });
   }
 };
