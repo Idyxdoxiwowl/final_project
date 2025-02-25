@@ -12,9 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const adminPanel = document.getElementById("admin-panel");
     const userList = document.getElementById("user-list");
     const profileSection = document.getElementById("profile-section");
-    const profileOverlay = document.getElementById("profile-overlay");
-    const closeProfileBtn = document.getElementById("close-profile-btn");
-    const profileBtn = document.getElementById("profile-btn");
     const profileEmail = document.getElementById("profile-email");
     const updateProfileBtn = document.getElementById("update-profile-btn");
     const addProductForm = document.getElementById("add-product-form");
@@ -183,28 +180,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("❌ Error adding product:", error);
         }
     });
-    if (token && userEmail) {
-        profileBtn.style.display = "inline-block";
-    }
     
-    // Открытие попапа при нажатии на "Profile"
-    profileBtn.addEventListener("click", () => {
-        loadUserProfile();
-        profileOverlay.style.display = "block";
-        profileSection.style.display = "block";
-    });
     
-    // Закрытие попапа при нажатии на "Close"
-    closeProfileBtn.addEventListener("click", () => {
-        profileOverlay.style.display = "none";
-        profileSection.style.display = "none";
-    });
-    
-    // Закрытие попапа при клике вне окна
-    profileOverlay.addEventListener("click", () => {
-        profileOverlay.style.display = "none";
-        profileSection.style.display = "none";
-    });
 
     // Покупка товара
     function attachBuyButtons() {
