@@ -194,33 +194,55 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function loadUserProfile() {
         try {
             const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
-                headers: { "Authorization": `Bearer ${token}` },
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
             });
+    
+            if (!response.ok) throw new Error("Failed to fetch profile");
+    
             const user = await response.json();
-            profileEmail.innerText = `Email: ${user.email}`;
+            console.log("Profile Data:", user); // ✅ Логируем данные профиля
+    
+            if (!user.email) {
+                profileEmail.innerText = "Email not found!"; // 🔴 Если email нет
+            } else {
+                profileEmail.innerText = `Email: ${user.email}`;
+            }
         } catch (error) {
             console.error("Error loading profile:", error);
+            profileEmail.innerText = "Error loading profile"; // 🔴 Выводим ошибку на UI
         }
     }
+    
 
     // Обновление профиля
     updateProfileBtn.addEventListener("click", async () => {
         const newEmail = prompt("Enter new email:");
         if (!newEmail) return;
-
+    
         try {
-            await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
+            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
                 method: "PUT",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
                 body: JSON.stringify({ email: newEmail }),
             });
-
-            alert("✅ Profile updated successfully!");
-            loadUserProfile();
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert("✅ Profile updated successfully!");
+                localStorage.setItem("userEmail", newEmail); // ✅ Обновляем email в локальном хранилище
+                loadUserProfile();
+            } else {
+                alert("❌ Failed to update profile: " + data.error);
+            }
         } catch (error) {
             console.error("Error updating profile:", error);
+            alert("❌ Server error. Please try again later.");
         }
     });
+    
 
     // Загружаем данные после определения всех функций
     loadProducts();
