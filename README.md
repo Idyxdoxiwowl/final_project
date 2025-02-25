@@ -223,5 +223,6 @@ git push -u origin main
 
 ## **Developers**
 - Ayana Ussenbayeva
+- Dariya Khussainova
 - Dana Otepova
 
