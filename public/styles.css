@@ -220,7 +220,7 @@ nav button:hover {
 }
 
 .profile-section {
-    display: none; /* По умолчанию скрыто */
+    display: none;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -232,6 +232,21 @@ nav button:hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     text-align: center;
     z-index: 1000;
+}
+
+#profile-btn {
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-left: 10px;
+    transition: background 0.3s;
+}
+#profile-btn:hover {
+    background-color: #666;
 }
 
 .profile-section h2 {
