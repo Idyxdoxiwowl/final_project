@@ -93,9 +93,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // Загрузка товаров
+    // Загрузка товаров  // GET /products
     async function loadProducts() {
-        try {
+        try {        
             const response = await fetch("https://final-project-afz0.onrender.com/api/products", {
                 method: "GET",
                 headers: token ? { "Authorization": `Bearer ${token}` } : {},
@@ -158,8 +158,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             alert("⚠️ All fields are required!");
             return;
         }
-    
-        try {
+             
+        try {       //POST /products
             const response = await fetch("https://final-project-afz0.onrender.com/api/products", {
                 method: "POST",
                 headers: {
@@ -184,8 +184,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     
     
-
-    // Покупка товара
+ 
+    // Покупка товара  POST /orders
     function attachBuyButtons() {
         document.querySelectorAll(".buy-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Удаление товара (для админов)
+    // Удаление товара (для админов) DELETE /products/:id
     function attachDeleteButtons() {
         document.querySelectorAll(".delete-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -260,6 +260,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    // PUT /products/:id:
     function attachEditButtons() {
         document.querySelectorAll(".edit-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -303,7 +304,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     
 
-    // Удаление пользователей (для админа)
+    // Удаление пользователей (для админа)  DELETE /users/:id
     function attachDeleteUserButtons() {
         document.querySelectorAll(".delete-user-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -322,7 +323,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Загрузка профиля
+    // Загрузка профиля    GET /auth/profile
     async function loadUserProfile() {
         const token = localStorage.getItem("token");
     
@@ -352,8 +353,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
     
-
-    // Обновление профиля
+ 
+    // Обновление профиля  PUT /auth/profile
     updateProfileBtn.addEventListener("click", async () => {
         const newEmail = prompt("Enter new email:");
         if (!newEmail) return;
@@ -375,7 +376,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("Error updating profile:", error);
         }
     });
-
+      // DELETE /users/:id
     function attachDeleteUserButtons() {
         document.querySelectorAll(".delete-user-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
