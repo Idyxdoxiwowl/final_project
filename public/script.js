@@ -139,20 +139,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    addProductForm.addEventListener("submit", async (e) => {
+    document.getElementById("add-product-form").addEventListener("submit", async (e) => {
         e.preventDefault();
     
         const name = document.getElementById("product-name").value.trim();
-        const price = parseFloat(document.getElementById("product-price").value.trim()); // Делаем число
+        const price = parseFloat(document.getElementById("product-price").value.trim());
         const description = document.getElementById("product-description").value.trim();
         const image = document.getElementById("product-image").value.trim();
-        
-        // ✅ Добавляем отсутствующие поля
-        const ref = `REF-${Math.random().toString(36).substr(2, 9)}`; // Генерируем `ref`
-        const category = "rings"; // Можно сделать выбор через select
-        const tags = ["gold", "diamond"]; // Тестовые теги
+        const category = document.getElementById("product-category").value;
+        const tags = document.getElementById("product-tags").value.split(",").map(tag => tag.trim());
     
-        if (!name || isNaN(price) || !description || !image) {
+        // ✅ Генерируем уникальный `ref`
+        const ref = `REF-${Math.random().toString(36).substr(2, 9)}`;
+    
+        if (!name || isNaN(price) || !description || !image || !category || tags.length === 0) {
             alert("⚠️ All fields are required!");
             return;
         }
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
                 },
                 body: JSON.stringify({ ref, category, name, price, tags, description, image }),
             });
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const data = await response.json();
             if (response.ok) {
                 alert("✅ Product added successfully!");
-                addProductForm.reset();
+                document.getElementById("add-product-form").reset();
                 loadProducts();
             } else {
                 console.error("❌ Error:", data.error);
@@ -180,6 +180,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("❌ Error adding product:", error);
         }
     });
+    
     
 
     // Покупка товара
