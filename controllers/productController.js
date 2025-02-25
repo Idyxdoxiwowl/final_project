@@ -13,19 +13,23 @@ exports.getProducts = async (req, res) => {
 // Добавление товара (Create) (для администратора)
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price, description, image } = req.body;
+    console.log("📥 New Product Data:", req.body); // ✅ Логируем полученные данные
 
-    if (!name || !price || !description) {
-      return res.status(400).json({ error: "All fields are required" });
+    const { ref, category, name, price, tags, description, image } = req.body;
+
+    if (!ref || !category || !name || !price || !description || !image) {
+      return res.status(400).json({ error: "⚠️ All fields are required!" });
     }
 
-    const newProduct = new Product({ name, price, description, image });
+    const newProduct = new Product({ ref, category, name, price, tags, description, image });
     await newProduct.save();
-    res.status(201).json({ message: "Product created successfully", product: newProduct });
+    res.status(201).json({ message: "✅ Product created successfully", product: newProduct });
   } catch (error) {
-    res.status(500).json({ error: "Error creating product" });
+    console.error("❌ Error creating product:", error);
+    res.status(500).json({ error: "❌ Server error, try again later" });
   }
 };
+
 
 // Обновление товара (Update)
 exports.updateProduct = async (req, res) => {
