@@ -43,8 +43,19 @@
                 <input type="number" id="product-price" placeholder="Price" required>
                 <textarea id="product-description" placeholder="Description"></textarea>
                 <input type="text" id="product-image" placeholder="Image URL">
+                
+                <select id="product-category" required>
+                    <option value="rings">Rings</option>
+                    <option value="bracelets">Bracelets</option>
+                    <option value="necklaces">Necklaces</option>
+                    <option value="earrings">Earrings</option>
+                    <option value="watches">Watches</option>
+                </select>
+                
+                <input type="text" id="product-tags" placeholder="Tags (comma separated)" required>
                 <button type="submit">Add Product</button>
             </form>
+
 
             <!-- Управление пользователями -->
             <h3>All Users</h3>
