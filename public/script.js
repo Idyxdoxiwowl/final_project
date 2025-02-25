@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const productList = document.getElementById("product-list");
     const adminPanel = document.getElementById("admin-panel");
     const userList = document.getElementById("user-list");
+    const profileSection = document.getElementById("profile-section");
+    const profileEmail = document.getElementById("profile-email");
+    const updateProfileBtn = document.getElementById("update-profile-btn");
 
     let isLogin = true;
 
@@ -38,10 +41,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (userRole === "admin") {
             adminPanel.style.display = "block";
+            loadUsers();
         }
+
+        profileSection.style.display = "block";
+        loadUserProfile();
     }
 
-    // Выход из аккаунта (работает корректно)
+    // Выход из аккаунта
     logoutBtn.addEventListener("click", () => {
         localStorage.clear();
         setTimeout(() => {
@@ -183,48 +190,37 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Загрузка пользователей (для админа)
-    async function loadUsers() {
+    // Загрузка профиля
+    async function loadUserProfile() {
         try {
-            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/users", {
+            const response = await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
-            const users = await response.json();
-            userList.innerHTML = "";
-
-            users.forEach(user => {
-                const userItem = document.createElement("div");
-                userItem.innerHTML = `
-                    <p>${user.email} (${user.role})</p>
-                    <button class="delete-user-btn" data-id="${user._id}">Delete</button>
-                `;
-                userList.appendChild(userItem);
-            });
-
-            attachDeleteUserButtons();
+            const user = await response.json();
+            profileEmail.innerText = `Email: ${user.email}`;
         } catch (error) {
-            console.error("Error fetching users:", error);
+            console.error("Error loading profile:", error);
         }
     }
 
-    // Удаление пользователей (для админа)
-    function attachDeleteUserButtons() {
-        document.querySelectorAll(".delete-user-btn").forEach(button => {
-            button.addEventListener("click", async (e) => {
-                const userId = e.target.dataset.id;
-                try {
-                    await fetch(`https://final-project-afz0.onrender.com/api/auth/users/${userId}`, {
-                        method: "DELETE",
-                        headers: { "Authorization": `Bearer ${token}` },
-                    });
+    // Обновление профиля
+    updateProfileBtn.addEventListener("click", async () => {
+        const newEmail = prompt("Enter new email:");
+        if (!newEmail) return;
 
-                    loadUsers();
-                } catch (error) {
-                    console.error("Error deleting user:", error);
-                }
+        try {
+            await fetch("https://final-project-afz0.onrender.com/api/auth/profile", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify({ email: newEmail }),
             });
-        });
-    }
+
+            alert("✅ Profile updated successfully!");
+            loadUserProfile();
+        } catch (error) {
+            console.error("Error updating profile:", error);
+        }
+    });
 
     // Загружаем данные после определения всех функций
     loadProducts();
