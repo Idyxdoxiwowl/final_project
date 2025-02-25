@@ -21,7 +21,7 @@ exports.registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Если email админа, назначаем роль "admin"
-        const role = email === "admin@store.com" ? "admin" : "user";
+        const role = email === "admin@mail.com" ? "admin" : "user";
 
         const newUser = new User({ email, password: hashedPassword, role });
         await newUser.save();
@@ -51,7 +51,7 @@ exports.loginUser = async (req, res) => {
 
         const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "2h" });
 
-        res.json({ token, email: user.email, role: user.role }); // Теперь возвращаем роль
+        res.json({ token, email: user.email, role: user.role }); //  возвращаем роль
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -60,24 +60,24 @@ exports.loginUser = async (req, res) => {
 // Получение профиля пользователя
 exports.getProfile = async (req, res) => {
     try {
-        console.log("🔍 Получение профиля, user:", req.user); // ✅ Лог данных пользователя
+        console.log("🔍 Getting profile, user:", req.user);
 
         if (!req.user || !req.user._id) {
-            console.error("❌ Ошибка: Пользователь не найден");
+            console.error("❌ Error: User not found");
             return res.status(401).json({ error: "Unauthorized: No user found" });
         }
 
         const user = await User.findById(req.user._id).select("-password");
 
         if (!user) {
-            console.error("❌ Ошибка: Пользователь не найден в базе данных");
+            console.error("❌ Error: User not found in database");
             return res.status(404).json({ error: "User not found" });
         }
 
-        console.log("✅ Профиль найден:", user); // ✅ Лог найденного профиля
+        console.log("✅ Profile found:", user); 
         res.json({ email: user.email });
     } catch (error) {
-        console.error("❌ Ошибка загрузки профиля:", error);
+        console.error("❌ Error loading profile:", error);
         res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
@@ -87,7 +87,7 @@ exports.getProfile = async (req, res) => {
 // Обновление профиля пользователя
 exports.updateProfile = async (req, res) => {
     try {
-        console.log("🔍 Обновление профиля, полученный user:", req.user); // ✅ Лог
+        console.log("🔍 Profile update received by user:", req.user); // ✅ Лог
 
         const { email } = req.body;
         if (!email) {
@@ -96,13 +96,13 @@ exports.updateProfile = async (req, res) => {
 
         // Убедимся, что пользователь передается
         if (!req.user || !req.user._id) {
-            console.error("❌ Ошибка: Пользователь не найден");
+            console.error("❌ Error: User not found");
             return res.status(401).json({ error: "Unauthorized: No user found" });
         }
 
         const user = await User.findById(req.user._id);
         if (!user) {
-            console.error("❌ Ошибка: Пользователь не найден в базе данных");
+            console.error("❌ Error: User not found in database");
             return res.status(404).json({ error: "User not found" });
         }
 
@@ -115,14 +115,13 @@ exports.updateProfile = async (req, res) => {
         user.email = email;
         await user.save(); // Сохраняем обновленный email в MongoDB
 
-        console.log("✅ Обновленный профиль:", user); // ✅ Лог
+        console.log("✅ Updated profile:", user); // ✅ Лог
         res.json({ message: "Profile updated successfully!", email: user.email });
     } catch (error) {
-        console.error("❌ Ошибка обновления профиля:", error);
+        console.error("❌ Profile update error:", error);
         res.status(500).json({ error: "Server error. Please try again later." });
     }
 };
-
 
 
 // Получение списка всех пользователей (для админов)
