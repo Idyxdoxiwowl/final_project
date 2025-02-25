@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const profileSection = document.getElementById("profile-section");
     const profileEmail = document.getElementById("profile-email");
     const updateProfileBtn = document.getElementById("update-profile-btn");
+    const addProductForm = document.getElementById("add-product-form");
 
     let isLogin = true;
 
@@ -136,6 +137,46 @@ document.addEventListener("DOMContentLoaded", async () => {
             productList.innerHTML = "<p>Failed to load products.</p>";
         }
     }
+
+
+    addProductForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("product-name").value.trim();
+        const price = document.getElementById("product-price").value.trim();
+        const description = document.getElementById("product-description").value.trim();
+        const image = document.getElementById("product-image").value.trim();
+        const category = "jewelry"; // Можешь добавить поле в форму для выбора категории
+        const ref = Math.random().toString(36).substr(2, 9); // Генерация случайного `ref`
+        const tags = ["gold", "diamond"]; // Можно добавить поле для тегов
+
+        if (!name || !price || !description || !image) {
+            alert("All fields are required!");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://final-project-afz0.onrender.com/api/products", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ ref, category, name, price, tags, description, image }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert("✅ Product added successfully!");
+                addProductForm.reset();
+                loadProducts();
+            } else {
+                alert(data.error || "❌ Failed to add product!");
+            }
+        } catch (error) {
+            console.error("Error adding product:", error);
+        }
+    });
 
     // Покупка товара
     function attachBuyButtons() {
