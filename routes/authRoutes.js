@@ -9,10 +9,10 @@ router.post("/login", loginUser);
 router.get("/profile", authenticate, getProfile);
 router.put("/profile", authenticate, updateProfile);
 
-// Новый маршрут для получения всех пользователей (только для админа)
+//для получения всех пользователей (только для админа)
 router.get("/users", authenticate, checkAdmin, getUsers);
 
-// Новый маршрут для удаления пользователей (только для админа)
+// для удаления пользователей (только для админа)
 router.delete("/users/:id", authenticate, checkAdmin, deleteUser);
 
 module.exports = router;
