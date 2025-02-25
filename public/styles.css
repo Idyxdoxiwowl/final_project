@@ -127,7 +127,7 @@ nav button:hover {
 }
 
 /* Кнопки */
-.buy-btn, .delete-btn, .add-product-btn {
+.buy-btn, .delete-btn, .add-product-btn, .edit-btn {
     background-color: #d4af37;
     color: black;
     border: none;
@@ -139,7 +139,7 @@ nav button:hover {
     transition: background-color 0.3s;
 }
 
-.buy-btn:hover, .delete-btn:hover, .add-product-btn:hover {
+.buy-btn:hover, .delete-btn:hover, .add-product-btn:hover, .edit-btn:hover{
     background-color: #b08a2e;
 }
 
