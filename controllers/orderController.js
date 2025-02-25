@@ -31,6 +31,22 @@ exports.createOrder = async (req, res) => {
   }
 };
 
+// Получение заказов пользователя (Read)
+exports.getOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ userId: req.user.userId })
+      .populate("products.productId", "name price image");
+
+    if (!orders.length) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching orders" });
+  }
+};
+
 // Удаление заказа (Delete)
 exports.deleteOrder = async (req, res) => {
   try {
