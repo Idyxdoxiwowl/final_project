@@ -212,3 +212,49 @@ nav button:hover {
     border-radius: 5px;
 }
 
+.profile-section {
+    max-width: 400px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+.profile-section h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #d4af37;
+    padding-bottom: 10px;
+}
+
+.profile-section p {
+    font-size: 18px;
+    color: #666;
+    margin: 10px 0;
+}
+
+#update-profile-btn {
+    background: #d4af37;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#update-profile-btn:hover {
+    background: #b08a2e;
+}
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
