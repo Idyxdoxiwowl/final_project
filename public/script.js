@@ -269,76 +269,38 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return;
                 }
     
-                // Получаем текущие данные товара перед редактированием
+                const newName = prompt("Enter new product name:");
+                const newPrice = prompt("Enter new price:");
+                const newDescription = prompt("Enter new description:");
+                const newImage = prompt("Enter new image URL:");
+    
+                if (!newName || !newPrice || !newDescription || !newImage) return;
+    
                 try {
-                    const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`);
-                    const product = await response.json();
+                    const response = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            name: newName,
+                            price: parseFloat(newPrice),
+                            description: newDescription,
+                            image: newImage
+                        })
+                    });
     
-                    if (!response.ok) {
-                        alert("Failed to fetch product data.");
-                        return;
+                    if (response.ok) {
+                        alert("✅ Product updated successfully!");
+                        loadProducts(); // Обновляем список
                     }
-    
-                    // Заполняем модальное окно текущими данными
-                    document.getElementById("edit-product-name").value = product.name;
-                    document.getElementById("edit-product-price").value = product.price;
-                    document.getElementById("edit-product-description").value = product.description;
-                    document.getElementById("edit-product-image").value = product.image;
-    
-                    // Открываем модальное окно
-                    const modal = document.getElementById("edit-product-modal");
-                    modal.style.display = "flex";
-    
-                    // При сохранении изменений
-                    document.getElementById("save-product-changes").onclick = async () => {
-                        const updatedProduct = {
-                            name: document.getElementById("edit-product-name").value,
-                            price: parseFloat(document.getElementById("edit-product-price").value),
-                            description: document.getElementById("edit-product-description").value,
-                            image: document.getElementById("edit-product-image").value
-                        };
-    
-                        try {
-                            const updateResponse = await fetch(`https://final-project-afz0.onrender.com/api/products/${productId}`, {
-                                method: "PUT",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "Authorization": `Bearer ${token}`
-                                },
-                                body: JSON.stringify(updatedProduct)
-                            });
-    
-                            if (updateResponse.ok) {
-                                alert("✅ Product updated successfully!");
-                                modal.style.display = "none"; // Закрываем модальное окно
-                                loadProducts(); // Обновляем список товаров
-                            } else {
-                                alert("❌ Error updating product!");
-                            }
-                        } catch (error) {
-                            console.error("Error updating product:", error);
-                        }
-                    };
                 } catch (error) {
-                    console.error("Error fetching product data:", error);
+                    console.error("Error updating product:", error);
                 }
             });
         });
-    
-        // Закрытие модального окна при клике на "X"
-        document.querySelector(".close-modal").addEventListener("click", () => {
-            document.getElementById("edit-product-modal").style.display = "none";
-        });
-    
-        // Закрытие при клике вне окна
-        window.addEventListener("click", (e) => {
-            const modal = document.getElementById("edit-product-modal");
-            if (e.target === modal) {
-                modal.style.display = "none";
-            }
-        });
     }
-    
     
 
     // Удаление пользователей (для админа)
